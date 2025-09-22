@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @theme {
+    /* Typography */
+  --font-cardo: "Cardo", serif;
+  --font-ovo: "Ovo", serif;
+
+  /* Colors */
   --color-green-dark: #9DDDB8;
   --color-green: #B6DEB9;
   --color-green-light: #CEEBD1;
