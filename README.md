@@ -13,13 +13,19 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Start project
 
+Clone proyect:
+
 ```
-git clone
+git clone https://github.com/group-12-p4da-F5/veterinary-clinic-frontend/tree/dev
 ```
+
+Install dependencies:
 
 ```
 npm install
 ```
+
+Start proyect:
 
 ```
 npm run dev
