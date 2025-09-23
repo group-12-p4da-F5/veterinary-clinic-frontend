@@ -44,6 +44,33 @@ const Register = () => {
               label= "Contraseña"
             />
 
+          {/* Input Password */}
+            <Input
+              name = "contraseña"
+              type = "contraseña"
+              id = "contraseña"
+              required = {true}
+              label= "Contraseña"
+            />
+
+          {/* Input Password */}
+            <Input
+              name = "contraseña"
+              type = "contraseña"
+              id = "contraseña"
+              required = {true}
+              label= "Contraseña"
+            />
+
+          {/* Input Password */}
+            <Input
+              name = "contraseña"
+              type = "contraseña"
+              id = "contraseña"
+              required = {true}
+              label= "Contraseña"
+            />
+
           {/* Buttons */}
           <div className="flex flex-col gap-3">
             <button

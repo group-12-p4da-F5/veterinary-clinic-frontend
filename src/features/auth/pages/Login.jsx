@@ -1,5 +1,6 @@
 import Logo from "../../../shared/assets/Logo.svg";
 import Input from "../components/Input";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const handleSubmit = (e) => {
@@ -46,12 +47,15 @@ const Login = () => {
 
           {/* Buttons */}
           <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
-            >
-              Registro
-            </button>
+            <Link to='/register'>
+              <button
+                type="button"
+                className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
+              >
+                Registro
+              </button>
+            </Link>
+
             <button
               type="submit"
               className="w-full py-2 px-4 bg-gray font-bold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark hover:text-white cursor-pointer"
