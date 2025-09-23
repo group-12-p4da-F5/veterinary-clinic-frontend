@@ -61,7 +61,53 @@ export default function MyAppointmentsPage() {
   );
 }
 
-// useMemo es un Hook que sirve para optimizar el rendimiento al memorizar (caché).
-// En lugar de volver a ejecutar la función que realiza el cálculo en cada renderizado, 
-// useMemo devuelve el valor previamente calculado si las dependencias del cálculo no han cambiado, 
-// evitando así recomputaciones innecesarias. 
+/* 
+===========================================================
+Resumen — MyAppointmentsPage (orquestador de “Mis citas”)
+===========================================================
+1) Rol de la página
+   - Esta página orquesta la vista: maneja el filtro de estado, selecciona qué filas mostrar y
+     delega el render de la tabla a <AppointmentsTable />.
+   - No hace fetch aún: usa MOCK_ROWS para validar UI y flujo antes de conectar con la API.
+
+2) Datos MOCK (temporales)
+   - MOCK_ROWS simula la respuesta ya formateada para la vista:
+       { id, date(DD/MM/YYYY), time(HH:mm), petName, type, reason, status }
+   
+3) Filtro de estado (controlado)
+   - state local: `status` ("all" por defecto) controla el <select>.
+   - STATUSES define valores internos (value EN) y etiquetas visibles (label ES).
+   - Cambio en el select → setStatus(...) → recalcula las filas visibles.
+
+4) Optimización (useMemo)
+   - `filteredRows` memoiza el resultado del filtrado en función de `status`.
+   - Si `status` no cambia, no se recalcula el filtrado → evita renders de la tabla innecesarios.
+   - En producción (con paginación/servidor) este filtrado podría delegarse a la API.
+
+5) Render de UI (mobile-first con Tailwind)
+   - Contenedor principal con paddings y max-width para layout fluido.
+   - Sección de filtros: label + select (listo para añadir más filtros en el futuro).
+   - Sección de tabla: delegada a <AppointmentsTable rows={filteredRows} />.
+  
+
+6) Separación de responsabilidades
+   - Página: estado de filtro, (en el futuro) lectura/escritura del query param (?status=),
+     orquestación y composición de componentes.
+   - Tabla (<AppointmentsTable>): componente de presentación; no contiene lógica de filtro.
+   - Badge (<AppointmentStatusBadge>): encapsula color y etiqueta según `status`.
+
+7) Extensiones futuras (TODO)
+   - Reemplazar MOCK_ROWS por hook/servicio real:
+       - GET /api/appointments/mine?status=pending|attended|past&page=0&size=10
+       - Mapear { startAt, pet.name, ... } → { date, time, petName, ... } en un util (mapApiToView).
+   - Sincronizar filtro con URL:
+       - Leer inicial desde `new URLSearchParams(location.search)`.
+       - Actualizar con `setSearchParams({ status })` para compartir estado por enlace.
+   - Manejo de estados: loading, error, empty (placeholder UX).
+   - Paginación/sort: decidir si es cliente o servidor y añadir controles.
+
+8) Depuración rápida
+   - Si “no aparece nada”, revisar que la ruta hija exista (ej. "/mis-citas"), que el Layout tenga <Outlet />,
+     y que el import/export de MyAppointmentsPage sea correcto (export default).
+*/
+
