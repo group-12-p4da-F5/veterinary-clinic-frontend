@@ -96,7 +96,7 @@ const Header = () => {
               Servicio
             </Link>
             <Link
-              to="/"
+              to="/login"
               className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
               onClick={() => setIsOpen(false)}
             >

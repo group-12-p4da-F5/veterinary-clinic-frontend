@@ -20,7 +20,7 @@ const Register = () => {
       <div className="flex-1 flex items-center justify-center">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-sm px-6 flex flex-col"
+          className="w-full max-w-sm px-6 flex flex-col m-4"
         >
           
           <Link to="/"  className="contents">
