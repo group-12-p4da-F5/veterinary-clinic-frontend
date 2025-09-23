@@ -4,6 +4,8 @@ import Input from "../components/Input";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { registerUser, clearError } from "../slices/userSlice"
+import ReCAPTCHA from "react-google-recaptcha";
+import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -18,6 +20,8 @@ const Register = () => {
     email: "",
     phone: ""
   })
+
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   useEffect(() => {
     dispatch(clearError())
@@ -68,6 +72,11 @@ const Register = () => {
       return false;
     }
 
+    if (!captchaToken) {
+      alert("Rellene el CAPTCHA");
+      return false;
+    }
+
     return true;
   }
 
@@ -79,6 +88,10 @@ const Register = () => {
     }
 
     const { verify_password, ...userData} = formData;
+
+    const payload = { ...userData, captchaToken }
+
+    console.log("FormData con CAPTCHA: ", payload);
 
     console.log("FormData: ", userData);
 
@@ -94,9 +107,11 @@ const Register = () => {
   return (
     <div className="flex min-h-screen">
       {/*  */}
-      <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
-        <img src={Logo} alt="Logo" className="max-w-xs" />
-      </div>
+      <Link to="/" className="contents">
+        <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
+          <img src={Logo} alt="Logo" className="max-w-xs" />
+        </div>
+      </Link>
 
       {/*  */}
       <div className="flex-1 flex items-center justify-center">
@@ -175,13 +190,27 @@ const Register = () => {
           {/* Input Phone */}
             <Input
               name = "phone"
-              type = "phone"
+              type = "tel"
               id = "phone"
               required = {true}
               label= "Teléfono"
               value = {formData.phone}
               onChange = {handleInputChange}
             />
+
+            {/* CAPTCHA */}
+
+            <div>
+              <ReCAPTCHA
+              sitekey={
+                import.meta.env.VITE_RECAPTCHA_SITE_KEY === "production"
+                ? "TU_SITE_KEY_REAL"
+                : "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+              }
+              onChange={(token) => setCaptchaToken(token)}
+              className="m-4"
+              />
+            </div>
 
           {/* Buttons */}
           <div className="flex flex-col gap-3">

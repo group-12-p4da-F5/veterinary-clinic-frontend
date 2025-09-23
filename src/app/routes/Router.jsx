@@ -4,6 +4,7 @@ import CredentialsLayout from "../../shared/layout/CredentialsLayout"
 import Login from "../../features/auth/pages/login"
 import Register from "../../features/auth/pages/Register"
 import MyAppointmentsPage from "../../features/appointments/pages/MyAppointmentsPage";
+import HomePage from "../pages/HomePage";
 
 const router = createBrowserRouter([
   {
@@ -11,9 +12,13 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-        path: "mis-citas",              
-        element: <MyAppointmentsPage />
+        index: true,              
+        element: <HomePage />
       },
+      {
+        path: "/mis-citas",
+        element: <MyAppointmentsPage />
+      }
     ]
   },
   {
