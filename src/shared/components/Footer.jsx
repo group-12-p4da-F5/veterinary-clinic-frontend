@@ -1,4 +1,3 @@
-// src/shared/components/Footer.jsx
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faEnvelope, faPhone, faClock } from '@fortawesome/free-solid-svg-icons';
@@ -177,7 +176,7 @@ const Footer = () => {
  const handleCloseModal = () => setIsModalOpen(false);
 
  return (
-  <footer className="bg-green-light font-cardo text-black py-10 px-4">
+  <footer className="bg-green-200 text-black py-2 px-2">
    <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
    
     <ColumnaFooter titulo="Quiénes somos" link="/quienes-somos">

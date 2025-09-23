@@ -1,3 +1,4 @@
+
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../../shared/layout/Layout";
 import HomePage from "../pages/HomePage"; // La importación va aquí
@@ -14,5 +15,4 @@ const router = createBrowserRouter([
         ],
     },
 ]);
-
 export default router;
