@@ -1,5 +1,6 @@
 import Logo from "../../../shared/assets/Logo.svg";
 import Input from "../components/Input";
+import { Link } from "react-router-dom";
 
 const Register = () => {
   const handleSubmit = (e) => {
@@ -9,7 +10,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       {/*  */}
       <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
         <img src={Logo} alt="Logo" className="max-w-xs" />
@@ -22,7 +23,9 @@ const Register = () => {
           className="w-full max-w-sm px-6 flex flex-col"
         >
           
-          <img src={Logo} alt="Logo" className="max-w-xs hidden-md m-12 md:hidden" />
+          <Link to="/"  className="contents">
+            <img src={Logo} alt="Logo" className=" max-w-xs hidden-md mb-12 md:hidden" />
+          </Link>
 
           <h1 className="text-4xl font-bold mb-8 text-center font-ovo">Bienvenido</h1>
 
@@ -35,59 +38,63 @@ const Register = () => {
               label= "DNI"
             />
 
-          {/* Input Password */}
+          {/* Input Name */}
             <Input
-              name = "contraseña"
-              type = "contraseña"
-              id = "contraseña"
+              name = "nombre"
+              type = "nombre"
+              id = "nombre"
               required = {true}
-              label= "Contraseña"
+              label= "Nombre"
             />
 
           {/* Input Password */}
             <Input
-              name = "contraseña"
-              type = "contraseña"
-              id = "contraseña"
+              name = "password"
+              type = "password"
+              id = "password"
               required = {true}
               label= "Contraseña"
             />
 
-          {/* Input Password */}
+          {/* Input Password again */}
             <Input
-              name = "contraseña"
-              type = "contraseña"
-              id = "contraseña"
+              name = "verify_password"
+              type = "password"
+              id = "verify_password"
               required = {true}
-              label= "Contraseña"
+              label= "Verificar Contraseña"
             />
 
-          {/* Input Password */}
+          {/* Input Email */}
             <Input
-              name = "contraseña"
-              type = "contraseña"
-              id = "contraseña"
+              name = "email"
+              type = "email"
+              id = "email"
               required = {true}
-              label= "Contraseña"
+              label= "Email"
+            />
+
+          {/* Input Phone */}
+            <Input
+              name = "phone"
+              type = "phone"
+              id = "phone"
+              required = {true}
+              label= "Teléfono"
             />
 
           {/* Buttons */}
           <div className="flex flex-col gap-3">
             <button
-              type="button"
-              className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
+              type="submit"
+              className="w-full py-2 px-4 bg-gray font-semibold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark border-2 border-gray hover:border-gray-dark hover:text-white cursor-pointer"
             >
               Registro
             </button>
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-gray font-bold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark hover:text-white cursor-pointer"
-            >
-              Entrar
-            </button>
+
             <button
               type="button"
-              className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 cursor-pointer"
+              className="w-full py-2 px-4 bg-transparent font-semibold rounded-lg hover:bg-green-light border-2 border-transparent cursor-pointer"
               onClick={() => window.history.back()}
             >
               Volver atrás

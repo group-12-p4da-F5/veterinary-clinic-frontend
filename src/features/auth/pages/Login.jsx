@@ -10,7 +10,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       {/*  */}
       <Link to="/"  className="contents">
         <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
@@ -51,6 +51,13 @@ const Login = () => {
 
           {/* Buttons */}
           <div className="flex flex-col gap-3">
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-gray font-semibold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark border-2 border-gray hover:border-gray-dark hover:text-white cursor-pointer"
+            >
+              Entrar
+            </button>
+
             <Link to='/register'>
               <button
                 type="button"
@@ -59,13 +66,6 @@ const Login = () => {
                 Registro
               </button>
             </Link>
-
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-gray font-semibold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark border-2 border-gray hover:border-gray-dark hover:text-white cursor-pointer"
-            >
-              Entrar
-            </button>
 
           </div>
         </form>
