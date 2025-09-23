@@ -1,18 +1,18 @@
-import { createBrowserRouter } from "react-router-dom"
-import Layout from "../../shared/layout/Layout"
-import MyAppointmentsPage from "../../features/appointments/pages/MyAppointmentsPage";
+
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../../shared/layout/Layout";
+import HomePage from "../pages/HomePage"; // La importación va aquí
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    children: [
-      {
-        path: "mis-citas",              
-        element: <MyAppointmentsPage />
-      },
-    ],
-  },
-])
-
-export default router
+    {
+        path: "/",
+        element: <Layout />,
+        children: [
+            {
+                path: "/",
+                element: <HomePage />,
+            },
+        ],
+    },
+]);
+export default router;
