@@ -3,6 +3,7 @@ import Layout from "../../shared/layout/BasicLayout"
 import CredentialsLayout from "../../shared/layout/CredentialsLayout"
 import Login from "../../features/auth/pages/login"
 import Register from "../../features/auth/pages/Register"
+import MyAppointmentsPage from "../../features/appointments/pages/MyAppointmentsPage";
 
 const router = createBrowserRouter([
   {
@@ -10,9 +11,9 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-        index: true,
-        element: <Login />
-      }
+        path: "mis-citas",              
+        element: <MyAppointmentsPage />
+      },
     ]
   },
   {
