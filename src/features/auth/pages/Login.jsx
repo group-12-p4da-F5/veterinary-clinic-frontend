@@ -12,9 +12,11 @@ const Login = () => {
   return (
     <div className="flex h-screen">
       {/*  */}
-      <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
-        <img src={Logo} alt="Logo" className="max-w-xs" />
-      </div>
+      <Link to="/"  className="contents">
+        <div className="flex-1 bg-green-light hidden md:flex items-center justify-center">
+          <img src={Logo} alt="Logo" className="max-w-xs" />
+        </div>
+      </Link>
 
       {/*  */}
       <div className="flex-1 flex items-center justify-center">
@@ -23,7 +25,9 @@ const Login = () => {
           className="w-full max-w-sm px-6 flex flex-col"
         >
           
-          <img src={Logo} alt="Logo" className="max-w-xs hidden-md m-12 md:hidden" />
+          <Link to="/"  className="contents">
+            <img src={Logo} alt="Logo" className="max-w-xs hidden-md m-12 md:hidden" />
+          </Link>
 
           <h1 className="text-4xl font-bold mb-8 text-center font-ovo">Bienvenido</h1>
 
@@ -50,7 +54,7 @@ const Login = () => {
             <Link to='/register'>
               <button
                 type="button"
-                className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
+                className="w-full py-2 px-4 bg-transparent font-semibold rounded-lg hover:bg-green-light border-2 border-transparent cursor-pointer"
               >
                 Registro
               </button>
@@ -58,17 +62,11 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-gray font-bold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark hover:text-white cursor-pointer"
+              className="w-full py-2 px-4 bg-gray font-semibold rounded-lg transition-all duration-150 ease-in-out hover:bg-gray-dark border-2 border-gray hover:border-gray-dark hover:text-white cursor-pointer"
             >
               Entrar
             </button>
-            <button
-              type="button"
-              className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 cursor-pointer"
-              onClick={() => window.history.back()}
-            >
-              Volver atrás
-            </button>
+
           </div>
         </form>
       </div>
