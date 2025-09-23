@@ -1,15 +1,11 @@
 // src/shared/components/Footer.jsx
 import React, { useState } from 'react';
-
-// Importaciones de Font Awesome
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faEnvelope, faPhone, faClock } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons';
-
-// Importación del logo (asegúrate de que la ruta sea correcta)
 import Logomargarita from '../assets/Logomargarita.png';
 
-// Componente para una columna del footer.
+
 const ColumnaFooter = ({ titulo, children, link, onClick }) => (
  <div>
   <h4 className="text-black text-lg font-bold mb-4">
@@ -29,7 +25,6 @@ const ColumnaFooter = ({ titulo, children, link, onClick }) => (
  </div>
 );
 
-// Componente para un ítem de contacto.
 const ItemContacto = ({ icono, texto }) => (
  <li className="flex items-center">
   <span className="mr-2 text-gray-900 w-5 h-5 flex items-center justify-center">
@@ -39,14 +34,13 @@ const ItemContacto = ({ icono, texto }) => (
  </li>
 );
 
-// Componente para los enlaces de servicio.
 const ItemFooter = ({ children }) => (
  <li>
   {children}
  </li>
 );
 
-// Componente para los íconos de redes sociales.
+
 const IconosSociales = () => (
  <div className="flex space-x-4 mt-6">
   <a href="https://www.facebook.com/MargaritaVetClinic" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-black transition-colors">
@@ -61,7 +55,6 @@ const IconosSociales = () => (
  </div>
 );
 
-// Componente del Formulario de Contacto (exportado para ser usado en el mismo archivo)
 export const ContactForm = ({ onClose }) => {
  const [formData, setFormData] = useState({
   name: '',
@@ -82,7 +75,6 @@ export const ContactForm = ({ onClose }) => {
   e.preventDefault();
   console.log('Formulario enviado:', formData);
 
-  // Muestra el mensaje de éxito
   setSuccessMessage('¡Gracias por tu interés! En el Centro Veterinario Margarita valoramos tu solicitud y la revisaremos pronto.');
  };
 
@@ -185,9 +177,9 @@ const Footer = () => {
  const handleCloseModal = () => setIsModalOpen(false);
 
  return (
-  <footer className="bg-green-200 text-black py-10 px-4">
+  <footer className="bg-green-light font-cardo text-black py-10 px-4">
    <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-    {/* Columna 1: Quiénes somos */}
+   
     <ColumnaFooter titulo="Quiénes somos" link="/quienes-somos">
      <p className="text-sm leading-relaxed text-gray-600">
       En el Centro Veterinario Margarita, nos especializamos en la salud y bienestar de mascotas.
@@ -196,7 +188,6 @@ const Footer = () => {
      </p>
     </ColumnaFooter>
 
-    {/* Columna 2: Servicios */}
     <ColumnaFooter titulo="Servicios" link="/servicios">
      <ul className="space-y-2 text-sm text-gray-600">
       <ItemFooter>Vacunación para Mascotas</ItemFooter>
@@ -207,7 +198,6 @@ const Footer = () => {
      </ul>
     </ColumnaFooter>
 
-    {/* Columna 3: Contacto */}
     <ColumnaFooter titulo="Contacto" link="/contacto">
      <ul className="space-y-2 text-sm text-gray-600">
       <ItemContacto icono={faMapMarkerAlt} texto="Calle Catalunya 123 4a Gijón, Asturias" />
@@ -217,7 +207,6 @@ const Footer = () => {
      </ul>
     </ColumnaFooter>
 
-    {/* Columna 4: Trabaja con nosotros y Redes Sociales */}
     <ColumnaFooter titulo="Trabaja con nosotros" onClick={handleOpenModal}>
      <p className="text-sm mb-4 leading-relaxed text-gray-600">
       Forma parte del equipo Margarita Clínica Veterinaria y crece con nosotros.
