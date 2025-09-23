@@ -3,8 +3,8 @@ import { Outlet } from 'react-router-dom';
 import Header from '../components/Header'; // Ruta corregida
 import Footer from '../components/Footer'; // Ruta corregida
 
-function Layout() {
-  return (
+const BasicLayout = () => {
+  return(
     <div>
       <Header />
       <main>
@@ -15,4 +15,4 @@ function Layout() {
   );
 }
 
-export default Layout;
+export default BasicLayout;
