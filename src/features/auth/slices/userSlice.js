@@ -1,13 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { registerService } from '../services/authService';
 
-// Acción asíncrona para registrar usuario
 export const registerUser = createAsyncThunk(
   'user/registerUser',
-  async (userData, thunkAPI) => {
-    const response = await axios.post('http://localhost:8080/api/users', userData);
-    return response.data; // el usuario registrado que devuelve el backend
-  }
+  registerService()
 );
 
 const initialState = {
