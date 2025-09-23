@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../../../shared/assets/Logo.svg";
 import Input from "../components/Input";
-import { loginUser } from "../slices/userSlice"
+import { loginUser, clearError } from "../slices/userSlice"
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -14,6 +14,10 @@ const Login = () => {
     dni:"",
     password:""
   })
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch])
 
   useEffect(() => {
     //TODO: change navigate to the new rute
