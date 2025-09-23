@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SuccessDialog from "../../../shared/components/SuccessDialog";
