@@ -4,7 +4,7 @@ import { faMapMarkerAlt, faEnvelope, faPhone, faClock } from '@fortawesome/free-
 import { faFacebookF, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons';
 import Logomargarita from '../assets/Logomargarita.png';
 
-// Componente para una columna del footer.
+
 const ColumnaFooter = ({ titulo, children, link, onClick }) => (
  <div>
   <h4 className="text-black text-lg font-bold mb-4">
@@ -24,7 +24,6 @@ const ColumnaFooter = ({ titulo, children, link, onClick }) => (
  </div>
 );
 
-// Componente para un ítem de contacto.
 const ItemContacto = ({ icono, texto }) => (
  <li className="flex items-center">
   <span className="mr-2 text-gray-900 w-5 h-5 flex items-center justify-center">
@@ -34,14 +33,13 @@ const ItemContacto = ({ icono, texto }) => (
  </li>
 );
 
-// Componente para los enlaces de servicio.
 const ItemFooter = ({ children }) => (
  <li>
   {children}
  </li>
 );
 
-// Componente para los íconos de redes sociales.
+
 const IconosSociales = () => (
  <div className="flex space-x-4 mt-6">
   <a href="https://www.facebook.com/MargaritaVetClinic" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-black transition-colors">
@@ -76,7 +74,6 @@ export const ContactForm = ({ onClose }) => {
   e.preventDefault();
   console.log('Formulario enviado:', formData);
 
-  
   setSuccessMessage('¡Gracias por tu interés! En el Centro Veterinario Margarita valoramos tu solicitud y la revisaremos pronto.');
  };
 
@@ -181,7 +178,7 @@ const Footer = () => {
  return (
   <footer className="bg-green-200 text-black py-2 px-2">
    <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-
+   
     <ColumnaFooter titulo="Quiénes somos" link="/quienes-somos">
      <p className="text-sm leading-relaxed text-gray-600">
       En el Centro Veterinario Margarita, nos especializamos en la salud y bienestar de mascotas.
