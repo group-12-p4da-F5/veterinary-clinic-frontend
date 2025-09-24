@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "../assets/Logo.svg";
 import { useState } from "react";
-import imgHeader from "../assets/imgHeader.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,19 +15,23 @@ const Header = () => {
       <div className="relative z-20 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 sm:h-20 lg:h-full lg:pt-16">
 
+
           {/* Logo */}
-          <div className="flex items-center " >
+          <div className="flex items-center">
             <Link to="/">
               <span className="sr-only">Home</span>
-              <img src={Logo} alt="Logo" className="h-16 w-auto invert brightness-0 transition-all ease-in-out duration-150 hover: hover:invert-0" />
+
+              
+
+              <img src={Logo} alt="Logo" className="h-16 w-auto invert brightness-0 transition-all ease-in-out duration-150 hover: hover:inve
             </Link>
           </div>
 
-          {/* Menu de Escritorio */}
+          {/* Menu */}
           <div className="hidden md:flex flex-1 justify-center">
             <nav
               aria-label="Global"
-              className="flex items-center gap-30 text-xl text-white"
+              className="flex items-center gap-6 text-sm"
             >
               <Link
                 to="/"
@@ -57,10 +60,11 @@ const Header = () => {
             </nav>
           </div>
 
-          {/* CAMBIO CLAVE: Asegúrate de que este div esté dentro del contenedor flex principal */}
-          <div className="flex md:hidden items-center">
+          {/* Hamburguer Menu */}
+          <div className="flex  md:hidden">
+
             <button
-              className="text-white"
+              className="text-gray-dark"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? (
@@ -72,11 +76,11 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Menú Móvil */}
+        {/* Mobile Menu */}
         {isOpen && (
           <nav
             aria-label="Mobile"
-            className="flex flex-col items-center gap-4 pb-4 md:hidden text-base text-white"
+            className="flex flex-col items-center gap-4 pb-4 md:hidden text-sm"
           >
             <Link
               to="/"
