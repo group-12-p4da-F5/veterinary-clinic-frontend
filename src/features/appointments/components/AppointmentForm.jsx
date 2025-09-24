@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SuccessDialog from "../../../shared/components/SuccessDialog";
 import useDailyQuota from "../hooks/useDailyQuota";
-
+import PatientSelect from "./PatientSelect"; // EDIT: uso del selector de paciente (ruta corregida)
 
 const InitialForm = {
   patientId: "",
@@ -46,8 +46,6 @@ export default function AppointmentForm() {
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }, [form.time]);
 
-  
-
   // Genera los horarios válidos: 08:00, 08:30, … 11:30
   const timeSlots = useMemo(() => {
     const out = [];
@@ -57,7 +55,6 @@ export default function AppointmentForm() {
     }
     return out;
   }, []);
-
 
   // validador simple
   const validate = useCallback((data) => {
@@ -217,7 +214,7 @@ export default function AppointmentForm() {
         title="Cita creada"
         message="Hemos registrado la cita correctamente. El cliente recibirá un correo de confirmación."
         actionLabel="Aceptar"
-        onAction={() => { }}
+        onAction={() => {}}
         onClose={() => setOpenSuccess(false)}
       />
 
@@ -229,26 +226,19 @@ export default function AppointmentForm() {
         noValidate
       >
         {/* Paciente (placeholder; luego se reemplaza por <PatientSelect />) */}
+        {/* EDIT: Reemplazado input por PatientSelect (autocomplete local) */}
         <div className="grid gap-1">
           <label htmlFor="patientId" className="text-sm font-medium">
             Paciente
           </label>
-          <input
-            ref={firstInputRef}
-            id="patientId"
-            name="patientId"
+          <PatientSelect
             value={form.patientId}
-            onChange={onChange}
-            placeholder="ID de paciente (temporal)"
-            className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${errors.patientId ? "border-orange" : "border-gray"
-              }`}
-            required
+            onSelect={(id) => {
+              setForm((f) => ({ ...f, patientId: id }));
+              setErrors((prev) => ({ ...prev, patientId: "" }));
+            }}
+            error={errors.patientId}
           />
-          {errors.patientId && (
-            <p id="patientId-error" className="text-xs text-orange">
-              {errors.patientId}
-            </p>
-          )}
           <p className="text-xs text-gray-dark">
             {/* * En el siguiente paso esto será un buscador (nombre/DNI). */}
           </p>
@@ -266,8 +256,9 @@ export default function AppointmentForm() {
               type="date"
               value={form.date}
               onChange={onChange}
-              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${errors.date || quotaFull ? "border-orange" : "border-gray"
-                }`}
+              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
+                errors.date || quotaFull ? "border-orange" : "border-gray"
+              }`}
               required
             />
             {/* Info de cupo diario */}
@@ -311,8 +302,9 @@ export default function AppointmentForm() {
               /* intervalos de 30 min y último inicio 11:30 */
               step="1800"
               max="11:30"
-              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${errors.time ? "border-orange" : "border-gray"
-                }`}
+              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
+                errors.time ? "border-orange" : "border-gray"
+              }`}
               required
             />
             {errors.time && (
@@ -358,8 +350,9 @@ export default function AppointmentForm() {
             value={form.reason}
             onChange={onChange}
             placeholder="Describe brevemente el motivo"
-            className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${errors.reason ? "border-orange" : "border-gray"
-              }`}
+            className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
+              errors.reason ? "border-orange" : "border-gray"
+            }`}
             required
           />
           {errors.reason && (
