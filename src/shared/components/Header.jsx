@@ -6,16 +6,24 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="bg-green-light font-cardo py-3">
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+    <header 
+      className="relative font-cardo bg-cover bg-center h-56 md:h-80" 
+      style={{ backgroundImage: `url(${imgHeader})` }}
+    >
+      <div className=" bg-opacity-40 absolute inset-0 z-10"></div>
+
+      <div className="relative z-20 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 sm:h-20 lg:h-full lg:pt-16">
+
 
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
               <span className="sr-only">Home</span>
-              <img src={Logo} alt="Logo" className="h-16 w-auto" />
+
               
+
+              <img src={Logo} alt="Logo" className="h-16 w-auto invert brightness-0 transition-all ease-in-out duration-150 hover: hover:inve
             </Link>
           </div>
 
@@ -44,7 +52,7 @@ const Header = () => {
                 Servicio
               </Link>
               <Link
-                to="/"
+                to="/login"
                 className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
               >
                 Login
@@ -96,7 +104,7 @@ const Header = () => {
               Servicio
             </Link>
             <Link
-              to="/"
+              to="/login"
               className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
               onClick={() => setIsOpen(false)}
             >
