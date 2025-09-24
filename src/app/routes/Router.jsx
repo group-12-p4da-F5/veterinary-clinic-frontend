@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"
 import AdminCreateAppointmentPage from "../../features/appointments/pages/AdminCreateAppointmentPage"
 import EditAppointmentPage from "../../features/appointments/pages/EditAppointmentPage"
-import Layout from "../../shared/layout/Layout"
 import Layout from "../../shared/layout/BasicLayout"
 import CredentialsLayout from "../../shared/layout/CredentialsLayout"
 import Login from "../../features/auth/pages/login"
@@ -26,7 +25,7 @@ const router = createBrowserRouter([
         path: "/editar-cita",
         element: <EditAppointmentPage />,
       },
- 
+ {
         path: "/mis-citas",
         element: <PublicRoute />,
         children: [
