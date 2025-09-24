@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { encodeBase64 } from './encrypt';
+import API_URL from '../../../app/apis/apiClinic';
 
-const API_URL = "http://localhost:8080/api/v1"
-const REGISTER_ENDPOINT = "/register"
-const LOGIN_ENDPOINT = "/login"
+const REGISTER_ENDPOINT = "register"
+const LOGIN_ENDPOINT = "login"
 
 export const registerService = async (userData) => {
   const encodedData = {
@@ -12,7 +12,7 @@ export const registerService = async (userData) => {
     password: encodeBase64(userData.password),
   };
 
-  const response = await axios.post(`${API_URL}${REGISTER_ENDPOINT}`, encodedData)
+  const response = await axios.post(`${API_URL}/${REGISTER_ENDPOINT}`, encodedData)
     .catch( (err) => {
       throw err.response?.data || {message: 'Error en el registro'} 
     });
@@ -27,7 +27,7 @@ export const loginService = async (userData) => {
     password: encodeBase64(userData.password),
   };
 
-  const response = await axios.get(`${API_URL}${LOGIN_ENDPOINT}`, {
+  const response = await axios.get(`${API_URL}/${LOGIN_ENDPOINT}`, {
     params: encodedData,
   })
     .catch((err) => {
