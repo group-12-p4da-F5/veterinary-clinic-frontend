@@ -12,3 +12,4 @@ export const getAllAppointments = async () => {
 
   return response.data;
 }
+

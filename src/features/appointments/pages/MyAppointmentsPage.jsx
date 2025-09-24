@@ -3,7 +3,6 @@ import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import AppointmentsTable from "../components/AppointmentsTable"
 import { Link } from "react-router-dom"
-import Layout from "../../../shared/layout/Layout"
 
 const MOCK_ROWS = [
   {
@@ -58,7 +57,7 @@ export default function MyAppointmentsPage() {
   }
 
   return (
-    <Layout>
+
       <main className="mx-auto max-w-screen-xl px-4 py-6">
         <header className="mb-6 flex items-center justify-between">
           <div>
@@ -103,6 +102,6 @@ export default function MyAppointmentsPage() {
           <AppointmentsTable rows={filteredRows} onRowClick={handleRowClick} />
         </section>
       </main>
-    </Layout>
+
   )
 }

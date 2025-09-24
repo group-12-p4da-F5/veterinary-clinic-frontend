@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Logo from "../assets/Logo.svg";
 import { useState } from "react";
+import imgHeader from "../assets/imgHeader.png"
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,6 @@ const Header = () => {
         <div className="flex items-center justify-between h-20 sm:h-20 lg:h-full lg:pt-16">
 
 
-          // ...
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">

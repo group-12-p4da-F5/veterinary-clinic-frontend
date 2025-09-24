@@ -1,7 +1,6 @@
 import React from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import AppointmentForm from "../components/AppointmentForm"
-import Layout from "../../../shared/layout/Layout"
 
 export default function EditAppointmentPage() {
   const location = useLocation()
@@ -23,7 +22,6 @@ export default function EditAppointmentPage() {
   }
 
   return (
-    <Layout>
       <main className="mx-auto max-w-screen-xl px-4 py-6">
         <header className="mb-6">
           <h1 className="text-2xl font-semibold">Editar cita</h1>
@@ -37,6 +35,5 @@ export default function EditAppointmentPage() {
           <AppointmentForm initialData={appointment} />
         </section>
       </main>
-    </Layout>
   )
 }
