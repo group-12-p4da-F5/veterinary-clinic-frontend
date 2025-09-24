@@ -4,6 +4,13 @@ import SuccessDialog from "../../../shared/components/SuccessDialog";
 import useDailyQuota from "../hooks/useDailyQuota";
 import PatientSelect from "./PatientSelect"; // EDIT: uso del selector de paciente (ruta corregida)
 
+// --- Business rules (horario y duración) ---
+const SLOT_MINUTES = 30;     // cada cita dura 30'
+const OPEN_HOUR = 9;         // abre 09:00
+const CLOSE_HOUR = 14;       // cierra 14:00
+const OPEN_MINUTES = OPEN_HOUR * 60;   // 540
+const CLOSE_MINUTES = CLOSE_HOUR * 60; // 840
+
 const InitialForm = {
   patientId: "",
   date: "",
@@ -40,16 +47,16 @@ export default function AppointmentForm() {
     if (!form.time) return "";
     const [hh, mm] = form.time.split(":").map(Number);
     if (Number.isNaN(hh) || Number.isNaN(mm)) return "";
-    const mins = hh * 60 + mm + 30;
+    const mins = hh * 60 + mm + SLOT_MINUTES; // EDIT: usa constante
     const endH = Math.floor(mins / 60);
     const endM = mins % 60;
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }, [form.time]);
 
-  // Genera los horarios válidos: 08:00, 08:30, … 11:30
+  // Genera los horarios válidos: 09:00, 09:30, … 13:30  (EDIT: nuevo rango)
   const timeSlots = useMemo(() => {
     const out = [];
-    for (let h = 8; h <= 11; h++) {
+    for (let h = 9; h <= 13; h++) {
       out.push(`${String(h).padStart(2, "0")}:00`);
       out.push(`${String(h).padStart(2, "0")}:30`);
     }
@@ -82,12 +89,13 @@ export default function AppointmentForm() {
       }
 
       const startMins = hh * 60 + mm;
-      const endMins = startMins + 30;
-      const noon = 12 * 60;
-      if (endMins > noon) {
+      const endMins = startMins + SLOT_MINUTES;
+
+      // EDIT: rango 09:00–14:00 (último inicio 13:30)
+      if (startMins < OPEN_MINUTES || endMins > CLOSE_MINUTES) {
         err.time =
           err.time ||
-          "La última cita debe finalizar a las 12:00 (hora máxima de inicio 11:30).";
+          "Horario 09:00–14:00 (último inicio 13:30).";
       }
     }
 
@@ -125,7 +133,6 @@ export default function AppointmentForm() {
 
     // Validación estricta para el campo HORA (bloquea valores inválidos antes de actualizar estado)
     if (name === "time") {
-      // Caso borrar/limpiar
       if (!value) {
         setForm((f) => ({ ...f, time: "" }));
         setErrors((prev) => ({ ...prev, time: "" }));
@@ -142,19 +149,18 @@ export default function AppointmentForm() {
         return; // no actualizamos estado
       }
 
-      // 2) La última cita debe finalizar a las 12:00 (hora máxima de inicio 11:30)
+      // 2) EDIT: rango 09:00–14:00 (último inicio 13:30)
       const [hh, mm] = value.split(":").map(Number);
-      const endMins = hh * 60 + mm + 30;
-      if (endMins > 12 * 60) {
+      const startMins = hh * 60 + mm;
+      const endMins = startMins + SLOT_MINUTES;
+      if (startMins < OPEN_MINUTES || endMins > CLOSE_MINUTES) {
         setErrors((prev) => ({
           ...prev,
-          time:
-            "La última cita debe finalizar a las 12:00 (hora máxima de inicio 11:30).",
+          time: "Horario 09:00–14:00 (último inicio 13:30).",
         }));
         return; // no actualizamos estado
       }
 
-      // Si pasa las validaciones de time, limpia error específico
       setErrors((prev) => ({ ...prev, time: "" }));
     }
 
@@ -179,7 +185,6 @@ export default function AppointmentForm() {
 
       // Cupo diario (UI/UX). El backend debe validar.
       if (quotaFull) {
-        // Marca el error en la fecha (opcional)
         setErrors((prev) => ({
           ...prev,
           date: prev.date || "Cupo diario completo (10/10).",
@@ -299,9 +304,10 @@ export default function AppointmentForm() {
               type="time"
               value={form.time}
               onChange={onChange}
-              /* intervalos de 30 min y último inicio 11:30 */
+              /* EDIT: intervalos de 30 min y último inicio 13:30 */
               step="1800"
-              max="11:30"
+              min="09:00"
+              max="13:30"
               className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
                 errors.time ? "border-orange" : "border-gray"
               }`}
@@ -310,6 +316,12 @@ export default function AppointmentForm() {
             {errors.time && (
               <p id="time-error" className="text-xs text-orange">
                 {errors.time}
+              </p>
+            )}
+            {/* EDIT: mensaje de horario permitido */}
+            {!errors.time && (
+              <p className="text-xs text-gray-500">
+                Horario permitido: 09:00–14:00 (último inicio 13:30).
               </p>
             )}
             {form.time && !errors.time && (
