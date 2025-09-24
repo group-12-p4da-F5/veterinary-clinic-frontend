@@ -5,40 +5,43 @@ import Login from "../../features/auth/pages/login"
 import Register from "../../features/auth/pages/Register"
 import MyAppointmentsPage from "../../features/appointments/pages/MyAppointmentsPage";
 import HomePage from "../pages/HomePage";
+import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      {
-        index: true,              
-        element: <HomePage />
-      },
+      { index: true, element: <HomePage /> },
       {
         path: "/mis-citas",
-        element: <MyAppointmentsPage />
+        element: <PublicRoute />,
+        children: [
+          { index: true, element: <MyAppointmentsPage /> }
+        ]
       }
     ]
   },
   {
     path: "/login",
-    element: <CredentialsLayout />,
+    element: (
+      <PublicRoute >
+        <CredentialsLayout />
+      </PublicRoute >
+    ),
     children: [
-      {
-        index: true,
-        element: <Login />
-      }
+      { index: true, element: <Login /> }
     ]
   },
   {
     path: "/register",
-    element: <CredentialsLayout />,
+    element: (
+      <PublicRoute >
+        <CredentialsLayout />
+      </PublicRoute >
+    ),
     children: [
-      {
-        index: true,
-        element: <Register />
-      }
+      { index: true, element: <Register /> }
     ]
   }
 ])
