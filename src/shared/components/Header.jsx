@@ -16,14 +16,17 @@ const Header = () => {
         <div className="flex items-center justify-between h-20 sm:h-20 lg:h-full lg:pt-16">
 
 
+          // ...
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
               <span className="sr-only">Home</span>
-
               
-
-              <img src={Logo} alt="Logo" className="h-16 w-auto invert brightness-0 transition-all ease-in-out duration-150 hover: hover:inve
+              <img
+                src={Logo}
+                alt="Logo"
+                className="h-16 w-auto invert brightness-0 transition-all ease-in-out duration-150 hover:invert"
+              />
             </Link>
           </div>
 
