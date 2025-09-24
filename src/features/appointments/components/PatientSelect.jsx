@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 // Mock local de pacientes (id que guardaremos en el form + etiqueta visible)
 const OPTIONS = [
-  { id: "p-001", label: "Cookie · Ana García (DNI 12345678A)" },
-  { id: "p-002", label: "Mila · Luis Pérez (DNI 22334455B)" },
-  { id: "p-003", label: "Rocky · Marta Díaz (DNI 99887766C)" },
-  { id: "p-004", label: "Toby · Sergio R. (DNI 44556677D)" },
-  { id: "p-005", label: "Luna · Paula M. (DNI 11223344E)" },
+    { id: "p-001", label: "Cookie · Dolores Delano (DNI 12345678A)" },
+    { id: "p-002", label: "Mila · Aitor Menta (DNI 22334455B)" },
+    { id: "p-003", label: "Rocky · Esteban Dido (DNI 99887766C)" },
+    { id: "p-004", label: "Toby · Benito Camelas (DNI 44556677D)" },
+    { id: "p-005", label: "Luna · Luz Cuesta Mogollón (DNI 11223344E)" },
 ];
 
 /**
@@ -16,31 +16,53 @@ const OPTIONS = [
  *  - error?: string                  // mensaje de error del form (si lo hay)
  */
 export default function PatientSelect({ value, onSelect, error }) {
+  const rootRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState(""); // lo que el usuario escribe/ve
+  const [query, setQuery] = useState("");
 
-  // Cuando cambia value desde fuera, sincroniza el texto visible
+  // Sincroniza texto visible al cambiar value
   useEffect(() => {
-    const selected = OPTIONS.find(o => o.id === value);
-    setQuery(selected ? selected.label : "");
+    const sel = OPTIONS.find((o) => o.id === value);
+    setQuery(sel ? sel.label : "");
   }, [value]);
 
-  // Filtro simple por texto (label)
+  // Filtro por texto
   const filtered = useMemo(() => {
-    if (!query) return OPTIONS;
-    const q = query.toLowerCase();
-    return OPTIONS.filter(o => o.label.toLowerCase().includes(q));
+    const q = query.trim().toLowerCase();
+    if (!q) return OPTIONS;
+    return OPTIONS.filter((o) => o.label.toLowerCase().includes(q));
   }, [query]);
 
   const handleSelect = (opt) => {
-    onSelect?.(opt.id);     // guardamos el id en el form
-    setQuery(opt.label);    // mostramos la etiqueta
+    onSelect?.(opt.id);
+    setQuery(opt.label);
     setOpen(false);
   };
 
+  // Cerrar al hacer click/touch FUERA (pointerdown es más fiable)
+  useEffect(() => {
+    const closeOnOutside = (e) => {
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutside);
+    return () => document.removeEventListener("pointerdown", closeOnOutside);
+  }, []);
+
+  // Cerrar al perder foco del componente completo (por Tab, click fuera, etc.)
+  const onInputBlur = () => {
+    setTimeout(() => {
+      if (!rootRef.current?.contains(document.activeElement)) setOpen(false);
+    }, 0);
+  };
+
+  const onInputKeyDown = (e) => {
+    if (e.key === "Escape" || e.key === "Tab") setOpen(false);
+  };
+
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <input
         ref={inputRef}
         type="text"
@@ -50,6 +72,8 @@ export default function PatientSelect({ value, onSelect, error }) {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onBlur={onInputBlur}
+        onKeyDown={onInputKeyDown}
         placeholder="Busca por nombre/DNI del responsable…"
         className={`w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
           error ? "border-orange" : "border-gray"
@@ -57,6 +81,7 @@ export default function PatientSelect({ value, onSelect, error }) {
         aria-invalid={!!error}
         aria-describedby={error ? "patientId-error" : undefined}
       />
+
       {error && (
         <p id="patientId-error" className="mt-1 text-xs text-orange">
           {error}
@@ -65,8 +90,12 @@ export default function PatientSelect({ value, onSelect, error }) {
 
       {open && (
         <div
-          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-gray bg-white shadow-lg"
           role="listbox"
+          className="
+            absolute z-50 mt-1 w-full rounded-lg border border-gray bg-white shadow-lg
+            overflow-y-auto max-h-36
+          "
+          style={{ maxHeight: "144px" }} // fallback por si Tailwind no aplica max-h
         >
           {filtered.length === 0 ? (
             <div className="p-2 text-sm text-gray-500">Sin resultados</div>
@@ -75,10 +104,12 @@ export default function PatientSelect({ value, onSelect, error }) {
               <button
                 key={opt.id}
                 type="button"
-                className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-green-light/40"
+                // preventDefault en mousedown evita perder foco antes del click
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(opt)}
                 role="option"
                 aria-selected={opt.id === value}
+                className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-green-light/40"
               >
                 {opt.label}
               </button>
