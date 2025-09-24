@@ -2,7 +2,7 @@ import axios from 'axios';
 import { encodeBase64 } from './encrypt';
 import API_URL from '../../../app/apis/apiClinic';
 
-const REGISTER_ENDPOINT = "register"
+const REGISTER_ENDPOINT = "users/register"
 const LOGIN_ENDPOINT = "login"
 
 export const registerService = async (userData) => {
