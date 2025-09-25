@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react"
-// ✅ Importa el hook 'useNavigate'
 import { useNavigate } from "react-router-dom"
-import AppointmentsTable from "../components/AppointmentsTable"
 import { Link } from "react-router-dom"
+import DataTable from "../../../shared/components/DataTable"
+import AppointmentStatusBadge from "../components/AppointmentStatusBadge"
 
 const MOCK_ROWS = [
   {
@@ -42,7 +42,6 @@ const STATUSES = [
 ]
 
 export default function MyAppointmentsPage() {
-  // ✅ Inicializa el hook 'useNavigate'
   const navigate = useNavigate()
   const [status, setStatus] = useState("all")
 
@@ -52,12 +51,21 @@ export default function MyAppointmentsPage() {
   }, [status])
 
   const handleRowClick = (appointment) => {
-    // ✅ Navega a la ruta de edición y pasa el objeto completo de la cita
+    //Navega a la ruta de edición y pasa el objeto completo de la cita
     navigate("/editar-cita", { state: { appointment } })
   }
 
-  return (
+  // EDIT: columnas declarativas para DataTable (reutiliza el badge de estado)
+  const columns = [
+    { key: "date",    header: "Fecha" },
+    { key: "time",    header: "Hora" },
+    { key: "petName", header: "Mascota" },
+    { key: "type",    header: "Tipo" },
+    { key: "reason",  header: "Motivo" },
+    { key: "status",  header: "Estado", cell: (row) => <AppointmentStatusBadge value={row.status} /> },
+  ]
 
+  return (
       <main className="mx-auto max-w-screen-xl px-4 py-6">
         <header className="mb-6 flex items-center justify-between">
           <div>
@@ -98,10 +106,15 @@ export default function MyAppointmentsPage() {
         </section>
 
         <section aria-label="Tabla de citas" className="rounded-xl border bg-white shadow-sm">
-          {/* ✅ Se pasa la función onRowClick a la tabla */}
-          <AppointmentsTable rows={filteredRows} onRowClick={handleRowClick} />
+          {/* Se pasa la función onRowClick a la tabla */}
+          <DataTable
+            columns={columns}
+            rows={filteredRows}
+            onRowClick={handleRowClick}
+            emptyMessage="No hay citas para mostrar."
+            testId="appointments-table"
+          />
         </section>
       </main>
-
   )
 }
