@@ -9,6 +9,7 @@ import MyAppointmentsPage from "../../features/appointments/pages/MyAppointments
 import HomePage from "../pages/HomePage";
 import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
 import PatientsListPage from "../../features/appointments/pages/PatientsListPage"
+import AdminHomePage from "../../features/appointments/pages/AdminHomePage"
 
 
 const router = createBrowserRouter([
@@ -33,8 +34,22 @@ const router = createBrowserRouter([
           { index: true, element: <MyAppointmentsPage /> }
         ]
       },
-      { path: "/pacientes", 
-        element: <PatientsListPage /> },
+      { 
+        path: "/pacientes", 
+        element: <PatientsListPage /> 
+      },
+      {
+        path: "/admin", //eliminar y activar la de abajo cuando este todo listo
+        element: <AdminHomePage/>,
+      }  
+
+        // {
+        //   path: "/admin",
+        //   element: <PrivateRoute/>,
+        //   children: [
+        //     { index: true, element: <AdminHomePage /> }
+        //   ]
+        // }
     ]
   },
   {
