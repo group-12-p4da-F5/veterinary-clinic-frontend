@@ -5,6 +5,9 @@ const MOCK = [
     { id: "p-003", name: "Rocky", species: "Perro", breed: "Pastor", age: 7, ownerName: "Marta Díaz" },
 ];
 
+//(TEST): variable módulo para fallar solo una vez
+let _failOnce = true;
+
 /**
  * Obtiene pacientes del servidor (o del MOCK mientras no haya backend).
  * @param {{ q?: string, signal?: AbortSignal }} params
@@ -28,7 +31,13 @@ export async function getPatients({ q = "", signal } = {}) {
     // =========================================================================================
 
     // --- Fallback MOCK (eliminar cuando este la API) ---
-    await new Promise((r) => setTimeout(r, 400)); // latencia simulada
+    await new Promise((r) => setTimeout(r, 500)); // latencia simulada
+
+    //(TEST): simula un error la PRIMERA llamada para probar la UI y el botón Reintentar
+    if (_failOnce) {
+        _failOnce = false;
+        throw new Error("Simulación de fallo (solo 1 vez para pruebas)");
+    }
     const term = q.trim().toLowerCase();
     if (!term) return MOCK;
     return MOCK.filter((r) =>
@@ -36,4 +45,7 @@ export async function getPatients({ q = "", signal } = {}) {
             .filter(Boolean)
             .some((v) => v.toLowerCase().includes(term))
     );
+
+     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+  return list;
 }

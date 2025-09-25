@@ -6,9 +6,8 @@ export default function PatientsListPage() {
     const [q, setQ] = useState("");
 
     // los datos vienen del hook (que a su vez usa el servicio y la API/mock)
-    const { data: rows, loading, error } = usePatients(q);
+    const { data: rows, loading, error, reload } = usePatients(q);
 
-    // Columnas requeridas por la historia
     const columns = [
         { key: "name", header: "Nombre" },
         { key: "species", header: "Especie" },
@@ -23,6 +22,32 @@ export default function PatientsListPage() {
                 <h1 className="text-2xl font-semibold">Pacientes</h1>
                 <p className="mt-1 text-sm text-gray-500">Listado de todos los pacientes registrados.</p>
             </header>
+
+            {/* EDIT: mensaje amigable de error con botón Reintentar (no bloquea la UI) */}
+            {error && (
+                <div
+                    className="mb-4 rounded-lg border border-orange/40 bg-orange/10 p-3"
+                    role="alert"
+                    aria-live="polite"
+                >
+                    <p className="text-sm font-medium text-orange">
+                        No pudimos cargar los pacientes ahora mismo.
+                    </p>
+                    <div className="mt-2 flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={reload}
+                            className="rounded-md bg-orange px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+                        >
+                            Reintentar
+                        </button>
+                        <span className="text-xs text-gray-dark">
+                            {/* detalle técnico útil para devs; visible pero discreto */}
+                            {error?.message ? `Detalle: ${error.message}` : "Error de red o del servidor"}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Buscador local: actualiza 'q', que dispara el hook con debounce */}
             <section aria-label="Buscador" className="mb-4">

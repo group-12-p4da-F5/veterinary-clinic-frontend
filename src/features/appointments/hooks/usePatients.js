@@ -14,6 +14,26 @@ export default function usePatients(q) {
   const abortRef = useRef(null);
   const debounceRef = useRef(null);
 
+  // Reintenta inmediatamente (sin esperar el debounce)
+  const reload = async () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    try {
+      setError(null);
+      setLoading(true);
+      const rows = await getPatients({ q, signal: ctrl.signal });
+      if (!ctrl.signal.aborted) setData(rows);
+    } catch (err) {
+      if (err.name !== "AbortError") setError(err);
+    } finally {
+      if (!ctrl.signal.aborted) setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setError(null);
     setLoading(true);
@@ -43,5 +63,5 @@ export default function usePatients(q) {
     };
   }, [q]);
 
-  return { data, loading, error };
+  return { data, loading, error, reload };
 }
