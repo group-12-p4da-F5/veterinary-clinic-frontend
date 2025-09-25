@@ -26,6 +26,27 @@ export default function DataTable({
   const colCount = columns.length;
   const hasRows = !loading && rows.length > 0;
 
+    if (loading) {
+    return (
+      <div
+        className="overflow-x-auto rounded-xl border border-gray bg-white p-6 shadow-sm"
+        data-testid={testId}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div className="flex items-center justify-center gap-3">
+          <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+          <span className="text-sm text-gray-600">Cargando…</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Render normal (sin loading): estado vacío o filas
   return (
     <div
       className="overflow-x-auto rounded-xl border border-gray bg-white shadow-sm"
@@ -46,33 +67,15 @@ export default function DataTable({
         </thead>
 
         <tbody>
-          {/* Loading state (skeleton) */}
-          {loading &&
-            [...Array(3)].map((_, r) => (
-              <tr
-                key={`loading-${r}`}
-                className={zebra && r % 2 === 0 ? "bg-green-light/30" : "bg-white"}
-              >
-                {columns.map((_, c) => (
-                  <td key={`loading-${r}-${c}`} className={`py-3 ${c === 0 ? "pl-4" : ""}`}>
-                    <div className="h-4 w-3/4 animate-pulse rounded bg-gray/70" />
-                  </td>
-                ))}
-              </tr>
-            ))}
-
           {/* Empty state */}
-          {!loading && !hasRows && (
+          {!hasRows ? (
             <tr>
               <td colSpan={colCount} className="p-4 text-center text-gray-dark">
                 {emptyMessage}
               </td>
             </tr>
-          )}
-
-          {/* Data rows */}
-          {!loading &&
-            hasRows &&
+          ) : (
+            /* Data rows */
             rows.map((row, idx) => {
               const rowCls = [
                 zebra && idx % 2 === 0 ? "bg-green-light/30" : "bg-white",
@@ -94,7 +97,8 @@ export default function DataTable({
                   ))}
                 </tr>
               );
-            })}
+            })
+          )}
         </tbody>
       </table>
     </div>

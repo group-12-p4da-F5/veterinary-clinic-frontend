@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getPatients } from "../services/patients.service";
+import { getPatients } from "../services/patientsServices";
 
 /**
  * Hook de datos con debounce + cancelación:
