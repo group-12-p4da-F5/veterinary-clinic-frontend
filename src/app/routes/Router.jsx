@@ -8,6 +8,8 @@ import Register from "../../features/auth/pages/Register"
 import MyAppointmentsPage from "../../features/appointments/pages/MyAppointmentsPage";
 import HomePage from "../pages/HomePage";
 import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
+import PatientsListPage from "../../features/appointments/pages/PatientsListPage"
+import AdminHomePage from "../../features/appointments/pages/AdminHomePage"
 
 
 const router = createBrowserRouter([
@@ -25,13 +27,29 @@ const router = createBrowserRouter([
         path: "/editar-cita",
         element: <EditAppointmentPage />,
       },
- {
+      {
         path: "/mis-citas",
         element: <PublicRoute />,
         children: [
           { index: true, element: <MyAppointmentsPage /> }
         ]
-      }
+      },
+      { 
+        path: "/pacientes", 
+        element: <PatientsListPage /> 
+      },
+      {
+        path: "/admin", //eliminar y activar la de abajo cuando este todo listo
+        element: <AdminHomePage/>,
+      }  
+
+        // {
+        //   path: "/admin",
+        //   element: <PrivateRoute/>,
+        //   children: [
+        //     { index: true, element: <AdminHomePage /> }
+        //   ]
+        // }
     ]
   },
   {
