@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react"; 
-import { Link } from "react-router-dom";             
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";            
 import DataTable from "../../../shared/components/DataTable";
 import AppointmentStatusBadge from "../components/AppointmentStatusBadge";
-import { getAllAppointments } from "../services/appointmentService"; 
+import { getAllAppointments } from "../services/appointmentService";
 
 export default function AdminAppointmentsPage() {
   const [rows, setRows] = useState([]);
@@ -56,7 +56,8 @@ export default function AdminAppointmentsPage() {
       header: "Acciones",
       cell: (r) => (
         <Link
-          to={`/admin/appointments/${r.id}/edit`}
+          to={`/editar-cita`}
+          state={{ appointment: r, fromAdmin:true }} //pasamos la cita por state para que EditAppointmentPage la reciba
           className="rounded-md bg-orange px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
         >
           Editar
