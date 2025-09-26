@@ -8,19 +8,19 @@ export default function AdminHomePage() {
   // Aqui se definen los accesos rápidos de la app
   const shortcuts = [
     {
-      to: "/admin/appointments/new",               // Crear cita (admin)
+      to: "/nueva-cita",               // Crear cita (admin)
       title: "Crear cita",
       desc: "Registrar una nueva cita para cualquier paciente.",
       emoji: "📅",
     },
     {
-      to: "/patients",                              // Lista de pacientes 
+      to: "/pacientes",                              // Lista de pacientes 
       title: "Pacientes",
       desc: "Ver todos los pacientes registrados.",
       emoji: "🐾",
     },
     {
-      to: "/mis-citas",                    // Lista de citas (propias)      
+      to: "/admin/citas-agendadas",                    // Lista de citas (admin)   
       title: "Citas",
       desc: "Revisar listado de citas.",
       emoji: "🗂️",
