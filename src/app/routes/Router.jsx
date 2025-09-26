@@ -10,6 +10,7 @@ import HomePage from "../pages/HomePage";
 import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
 import PatientsListPage from "../../features/appointments/pages/PatientsListPage"
 import AdminHomePage from "../../features/appointments/pages/AdminHomePage"
+import TreatmentPage from "../../features/treatment/TreatmentPage" 
 import AdminAppointmentsPage from "../../features/appointments/pages/AdminAppointmentPages"
 
 
@@ -72,28 +73,35 @@ const router = createBrowserRouter([
       // }
     ]
   },
-  {
-    path: "/login",
-    element: (
-      <PublicRoute >
-        <CredentialsLayout />
-      </PublicRoute >
-    ),
-    children: [
-      { index: true, element: <Login /> }
-    ]
-  },
-  {
-    path: "/register",
-    element: (
-      <PublicRoute >
-        <CredentialsLayout />
-      </PublicRoute >
-    ),
-    children: [
-      { index: true, element: <Register /> }
-    ]
-  }
+
+   {
+    path: "/tratamiento/:treatmentId", 
+    element: <TreatmentPage />,
+   },
+  ]
+ },
+ {
+  path: "/login",
+  element: (
+   <PublicRoute >
+    <CredentialsLayout />
+   </PublicRoute >
+  ),
+  children: [
+   { index: true, element: <Login /> }
+  ]
+ },
+ {
+  path: "/register",
+  element: (
+   <PublicRoute >
+    <CredentialsLayout />
+   </PublicRoute >
+  ),
+  children: [
+   { index: true, element: <Register /> }
+  ]
+ }
 ])
 
 export default router
