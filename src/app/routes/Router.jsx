@@ -19,10 +19,11 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      { index: true, element: <HomePage /> 
-
+      { 
+        index: true, 
+        element: <HomePage /> 
       },
- 
+      
       {
         path: "/nueva-cita",
         element: <AdminCreateAppointmentPage />,
@@ -45,63 +46,50 @@ const router = createBrowserRouter([
         path: "/pacientes", 
         element: <PatientsListPage /> 
       },
+      
+      {
+        // Se coloca aquí ya que usa el Layout principal.
+        path: "/tratamiento/:treatmentId", 
+        element: <TreatmentPage />,
+      },
 
       {
-        path: "/admin", //eliminar y activar la de abajo cuando este todo listo
+        path: "/admin", // eliminar y activar la de abajo cuando este todo listo
         element: <AdminHomePage/>,
       }, 
 
-        // {
-        //   path: "/admin",
-        //   element: <PrivateRoute/>,
-        //   children: [
-        //     { index: true, element: <AdminHomePage /> }
-        //   ]
-        // },
+      // Las rutas comentadas se dejan intactas según tu solicitud.
 
-        {
-          path: "/admin/citas-agendadas",
-          element: <AdminAppointmentsPage />
-        },
-
-      // {
-      //   path: "admin/citas-agendadas",
-      //   element: <PrivateRoute />,
-      //   children: [
-      //     { index: true, element: <AdminAppointmentsPage /> },
-      //   ]
-      // }
+      {
+        path: "/admin/citas-agendadas",
+        element: <AdminAppointmentsPage />
+      },
     ]
   },
-
-   {
-    path: "/tratamiento/:treatmentId", 
-    element: <TreatmentPage />,
-   },
-  ]
- },
- {
-  path: "/login",
-  element: (
-   <PublicRoute >
-    <CredentialsLayout />
-   </PublicRoute >
-  ),
-  children: [
-   { index: true, element: <Login /> }
-  ]
- },
- {
-  path: "/register",
-  element: (
-   <PublicRoute >
-    <CredentialsLayout />
-   </PublicRoute >
-  ),
-  children: [
-   { index: true, element: <Register /> }
-  ]
- }
+  
+  // Rutas de Credenciales (Login y Register) fuera del Layout principal.
+  {
+    path: "/login",
+    element: (
+      <PublicRoute >
+        <CredentialsLayout />
+      </PublicRoute >
+    ),
+    children: [
+      { index: true, element: <Login /> }
+    ]
+  },
+  {
+    path: "/register",
+    element: (
+      <PublicRoute >
+        <CredentialsLayout />
+      </PublicRoute >
+    ),
+    children: [
+      { index: true, element: <Register /> }
+    ]
+  }
 ])
 
 export default router
