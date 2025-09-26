@@ -10,70 +10,67 @@ import HomePage from "../pages/HomePage";
 import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
 import PatientsListPage from "../../features/appointments/pages/PatientsListPage"
 import AdminHomePage from "../../features/appointments/pages/AdminHomePage"
+import TreatmentPage from "../../features/treatment/TreatmentPage" 
 
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    children: [
-      { index: true, element: <HomePage /> },
- 
-      {
-        path: "/nueva-cita",
-        element: <AdminCreateAppointmentPage />,
-      },
-      {
-        path: "/editar-cita",
-        element: <EditAppointmentPage />,
-      },
-      {
-        path: "/mis-citas",
-        element: <PublicRoute />,
-        children: [
-          { index: true, element: <MyAppointmentsPage /> }
-        ]
-      },
-      { 
-        path: "/pacientes", 
-        element: <PatientsListPage /> 
-      },
-      {
-        path: "/admin", //eliminar y activar la de abajo cuando este todo listo
-        element: <AdminHomePage/>,
-      }  
+ {
+  path: "/",
+  element: <Layout />,
+  children: [
+   { index: true, element: <HomePage /> },
 
-        // {
-        //   path: "/admin",
-        //   element: <PrivateRoute/>,
-        //   children: [
-        //     { index: true, element: <AdminHomePage /> }
-        //   ]
-        // }
-    ]
-  },
-  {
-    path: "/login",
-    element: (
-      <PublicRoute >
-        <CredentialsLayout />
-      </PublicRoute >
-    ),
+   {
+    path: "/nueva-cita",
+    element: <AdminCreateAppointmentPage />,
+   },
+   {
+    path: "/editar-cita",
+    element: <EditAppointmentPage />,
+   },
+   {
+    path: "/mis-citas",
+    element: <PublicRoute />,
     children: [
-      { index: true, element: <Login /> }
+     { index: true, element: <MyAppointmentsPage /> }
     ]
-  },
-  {
-    path: "/register",
-    element: (
-      <PublicRoute >
-        <CredentialsLayout />
-      </PublicRoute >
-    ),
-    children: [
-      { index: true, element: <Register /> }
-    ]
-  }
+   },
+   { 
+    path: "/pacientes", 
+    element: <PatientsListPage /> 
+   },
+   {
+    path: "/tratamiento/:treatmentId", 
+    element: <TreatmentPage />,
+   },
+   {
+    path: "/admin", //eliminar y activar la de abajo cuando este todo listo
+    element: <AdminHomePage/>,
+   } 
+  ]
+ },
+ {
+  path: "/login",
+  element: (
+   <PublicRoute >
+    <CredentialsLayout />
+   </PublicRoute >
+  ),
+  children: [
+   { index: true, element: <Login /> }
+  ]
+ },
+ {
+  path: "/register",
+  element: (
+   <PublicRoute >
+    <CredentialsLayout />
+   </PublicRoute >
+  ),
+  children: [
+   { index: true, element: <Register /> }
+  ]
+ }
 ])
 
 export default router
