@@ -11,42 +11,73 @@ import { PrivateRoute, PublicRoute } from "../../shared/utils/RouteGuards"
 import PatientsListPage from "../../features/appointments/pages/PatientsListPage"
 import AdminHomePage from "../../features/appointments/pages/AdminHomePage"
 import TreatmentPage from "../../features/treatment/TreatmentPage" 
+import AdminAppointmentsPage from "../../features/appointments/pages/AdminAppointmentPages"
 
 
 const router = createBrowserRouter([
- {
-  path: "/",
-  element: <Layout />,
-  children: [
-   { index: true, element: <HomePage /> },
-
-   {
-    path: "/nueva-cita",
-    element: <AdminCreateAppointmentPage />,
-   },
-   {
-    path: "/editar-cita",
-    element: <EditAppointmentPage />,
-   },
-   {
-    path: "/mis-citas",
-    element: <PublicRoute />,
+  {
+    path: "/",
+    element: <Layout />,
     children: [
-     { index: true, element: <MyAppointmentsPage /> }
+      { index: true, element: <HomePage /> 
+
+      },
+ 
+      {
+        path: "/nueva-cita",
+        element: <AdminCreateAppointmentPage />,
+      },
+
+      {
+        path: "/editar-cita",
+        element: <EditAppointmentPage />,
+      },
+
+      {
+        path: "/mis-citas",
+        element: <PublicRoute />,
+        children: [
+          { index: true, element: <MyAppointmentsPage /> }
+        ]
+      },
+
+      { 
+        path: "/pacientes", 
+        element: <PatientsListPage /> 
+      },
+
+      {
+        path: "/admin", //eliminar y activar la de abajo cuando este todo listo
+        element: <AdminHomePage/>,
+      }, 
+
+        // {
+        //   path: "/admin",
+        //   element: <PrivateRoute/>,
+        //   children: [
+        //     { index: true, element: <AdminHomePage /> }
+        //   ]
+        // },
+
+        {
+          path: "/admin/citas-agendadas",
+          element: <AdminAppointmentsPage />
+        },
+
+      // {
+      //   path: "admin/citas-agendadas",
+      //   element: <PrivateRoute />,
+      //   children: [
+      //     { index: true, element: <AdminAppointmentsPage /> },
+      //   ]
+      // }
     ]
-   },
-   { 
-    path: "/pacientes", 
-    element: <PatientsListPage /> 
-   },
+  },
+
    {
     path: "/tratamiento/:treatmentId", 
     element: <TreatmentPage />,
    },
-   {
-    path: "/admin", //eliminar y activar la de abajo cuando este todo listo
-    element: <AdminHomePage/>,
-   } 
   ]
  },
  {
