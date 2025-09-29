@@ -1,5 +1,5 @@
 export const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-export const isValidDni = (dni) => /^\d{8}$/.test(dni);
+export const isValidDni = (dni) => /^\d{8}[a-zA-Z]$/.test(dni);
 
 export const validateRegisterForm = (data, captchaToken) => {
   const { dni, name, password, verify_password, email, phone } = data;
@@ -17,7 +17,7 @@ export const validateRegisterForm = (data, captchaToken) => {
     return "Ingrese un email válido";
 
   if (!isValidDni(dni))
-    return "El DNI debe tener 8 dígitos";
+    return "El DNI debe tener 8 dígitos y una letra";
 
   if (!captchaToken)
     return "Rellene el CAPTCHA";

@@ -1,10 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.svg";
 import { useState } from "react";
 import imgHeader from "../assets/imgHeader.png";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../features/auth/slices/userSlice";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated, currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  }
 
   return (
     <header 
@@ -48,12 +58,23 @@ const Header = () => {
               >
                 Servicio
               </Link>
-              <Link
-                to="/login"
-                className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
-              >
-                Login
-              </Link>
+
+
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
+                >
+                  Logout ({currentUser?.username})
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
+                >
+                  Login
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -98,13 +119,25 @@ const Header = () => {
             >
               Servicio
             </Link>
-            <Link
-              to="/login"
-              className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
-              onClick={() => setIsOpen(false)}
-            >
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+                className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
+              >
+                Logout ({currentUser?.username || "Usuario"})
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
+            )}
           </nav>
         )}
       </div>

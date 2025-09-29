@@ -7,6 +7,8 @@ import { loginUser, clearError } from "../slices/userSlice"
 import FormError from "../../../shared/components/FormError";
 import useLoginForm from "../hooks/useLoginForm";
 
+import {store} from '../../../app/store/store'; // debug
+
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,6 +34,9 @@ const Login = () => {
 
     try {
       await dispatch(loginUser(formData)).unwrap();
+      const resultAction = await dispatch(loginUser(formData)).unwrap(); //debug
+      console.log("Dispatch login result:", resultAction); //debug
+      console.log("Redux state after login:", store.getState().user); //debug
     } catch (err) {
       console.log("Error: ", err);
     }

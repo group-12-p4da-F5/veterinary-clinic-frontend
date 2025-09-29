@@ -2,7 +2,9 @@ import axios from 'axios';
 import { encodeBase64 } from './encrypt';
 import API_URL from '../../../app/apis/apiClinic';
 
-const REGISTER_ENDPOINT = "users/register"
+axios.defaults.withCredentials = true;
+
+const REGISTER_ENDPOINT = "register"
 const LOGIN_ENDPOINT = "login"
 
 export const registerService = async (userData) => {
@@ -34,5 +36,6 @@ export const loginService = async (userData) => {
       throw err.response?.data || {message: "Error en el login"}
     });
 
+    console.log("loginService response:", response.data); // 🔥
   return response.data;
 }
