@@ -2,14 +2,14 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SuccessDialog from "../../../shared/components/SuccessDialog";
 import useDailyQuota from "../hooks/useDailyQuota";
-import PatientSelect from "./PatientSelect"; // EDIT: uso del selector de paciente (ruta corregida)
+import useAvailableHours from "../hooks/useAvailableHours";
+import PatientSelect from "./PatientSelect";
+import { createAppointment } from "../services/appointmentService";
 
 // --- Business rules (horario y duración) ---
-const SLOT_MINUTES = 30;     // cada cita dura 30'
-const OPEN_HOUR = 9;         // abre 09:00
-const CLOSE_HOUR = 14;       // cierra 14:00
-const OPEN_MINUTES = OPEN_HOUR * 60;   // 540
-const CLOSE_MINUTES = CLOSE_HOUR * 60; // 840
+const SLOT_MINUTES = 30;
+const OPEN_HOUR = 9;
+const CLOSE_HOUR = 14;
 
 const InitialForm = {
   patientId: "",
@@ -25,16 +25,22 @@ export default function AppointmentForm() {
 
   const [form, setForm] = useState(InitialForm);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [resetKey, setResetKey] = useState(0); // resetea el formulario
+  const [resetKey, setResetKey] = useState(0);
   const [openSuccess, setOpenSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const firstInputRef = useRef(null); // referencia para enfocar el primer campo
+  const firstInputRef = useRef(null);
 
-  // confirmamos cupo diario (≤10)
+  // Hook para obtener horas disponibles
+  const { hours: availableHours, loading: hoursLoading, error: hoursError } = 
+    useAvailableHours(form.date || null);
+
+  // Hook para cupo diario
   const { count, limit, loading: quotaLoading, error: quotaError, quotaFull } =
     useDailyQuota(form.date || null);
 
-  //estado de errores por campo
+  // Estado de errores por campo
   const [errors, setErrors] = useState({
     patientId: "",
     date: "",
@@ -42,64 +48,51 @@ export default function AppointmentForm() {
     reason: "",
   });
 
-  // calcula la hora de fin (30 min después) para mostrarla en la UI
+  // Calcula la hora de fin (30 min después)
   const computedEndTime = useMemo(() => {
     if (!form.time) return "";
     const [hh, mm] = form.time.split(":").map(Number);
     if (Number.isNaN(hh) || Number.isNaN(mm)) return "";
-    const mins = hh * 60 + mm + SLOT_MINUTES; // EDIT: usa constante
+    const mins = hh * 60 + mm + SLOT_MINUTES;
     const endH = Math.floor(mins / 60);
     const endM = mins % 60;
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }, [form.time]);
 
-  // Genera los horarios válidos: 09:00, 09:30, … 13:30  (EDIT: nuevo rango)
-  const timeSlots = useMemo(() => {
-    const out = [];
-    for (let h = 9; h <= 13; h++) {
-      out.push(`${String(h).padStart(2, "0")}:00`);
-      out.push(`${String(h).padStart(2, "0")}:30`);
-    }
-    return out;
-  }, []);
-
-  // validador simple
+  // Validador
   const validate = useCallback((data) => {
     const err = { patientId: "", date: "", time: "", reason: "" };
 
-    // patientId
-    if (!data.patientId.trim()) {
+    // patientId (DNI)
+    if (!data.patientId || !data.patientId.trim()) {
       err.patientId = "Selecciona un paciente válido.";
     }
 
     // date
     if (!data.date) {
       err.date = "Selecciona una fecha.";
+    } else {
+      // Validar que sea día laborable
+      const date = new Date(data.date + "T00:00:00");
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        err.date = "Solo se pueden agendar citas de lunes a viernes.";
+      }
+      
+      // Validar que sea fecha futura
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (date < today) {
+        err.date = "La fecha debe ser futura.";
+      }
     }
 
     // time
     if (!data.time) {
       err.time = "Selecciona una hora.";
-    } else {
-      const [hh, mm] = data.time.split(":").map(Number);
-
-      // Solo intervalos de 30 min
-      if (![0, 30].includes(mm)) {
-        err.time = "Solo intervalos de 30 minutos (:00 o :30).";
-      }
-
-      const startMins = hh * 60 + mm;
-      const endMins = startMins + SLOT_MINUTES;
-
-      // EDIT: rango 09:00–14:00 (último inicio 13:30)
-      if (startMins < OPEN_MINUTES || endMins > CLOSE_MINUTES) {
-        err.time =
-          err.time ||
-          "Horario 09:00–14:00 (último inicio 13:30).";
-      }
     }
 
-    // fecha y hora futura (si hay ambas)
+    // fecha y hora futura (validación adicional)
     if (data.date && data.time) {
       const startAt = new Date(`${data.date}T${data.time}`);
       const now = new Date();
@@ -107,8 +100,7 @@ export default function AppointmentForm() {
         err.date = err.date || "Fecha u hora inválida.";
         err.time = err.time || "Fecha u hora inválida.";
       } else if (startAt <= now) {
-        err.date = err.date || "Debe ser una fecha futura.";
-        err.time = err.time || "Debe ser una hora futura.";
+        err.time = err.time || "La hora debe ser futura.";
       }
     }
 
@@ -130,48 +122,26 @@ export default function AppointmentForm() {
 
   const onChange = (e) => {
     const { name, value } = e.target;
-
-    // Validación estricta para el campo HORA (bloquea valores inválidos antes de actualizar estado)
-    if (name === "time") {
-      if (!value) {
-        setForm((f) => ({ ...f, time: "" }));
-        setErrors((prev) => ({ ...prev, time: "" }));
-        return;
-      }
-
-      // 1) Debe coincidir con hh:mm y minutos 00 o 30
-      const isSlot = /^([01]\d|2[0-3]):(00|30)$/.test(value);
-      if (!isSlot) {
-        setErrors((prev) => ({
-          ...prev,
-          time: "Solo intervalos de 30 minutos (:00 o :30).",
-        }));
-        return; // no actualizamos estado
-      }
-
-      // 2) EDIT: rango 09:00–14:00 (último inicio 13:30)
-      const [hh, mm] = value.split(":").map(Number);
-      const startMins = hh * 60 + mm;
-      const endMins = startMins + SLOT_MINUTES;
-      if (startMins < OPEN_MINUTES || endMins > CLOSE_MINUTES) {
-        setErrors((prev) => ({
-          ...prev,
-          time: "Horario 09:00–14:00 (último inicio 13:30).",
-        }));
-        return; // no actualizamos estado
-      }
-
-      setErrors((prev) => ({ ...prev, time: "" }));
+    
+    // Limpiar error del submit anterior
+    setSubmitError("");
+    
+    // Si cambia la fecha, limpiar la hora seleccionada
+    if (name === "date") {
+      setForm((f) => ({ ...f, date: value, time: "" }));
+      setErrors((prev) => ({ ...prev, date: "", time: "" }));
+      return;
     }
 
-    // Limpia el error del campo editado y actualiza el estado (incluye time si era válido)
+    // Limpia el error del campo editado y actualiza el estado
     setErrors((prev) => ({ ...prev, [name]: "" }));
     setForm((f) => ({ ...f, [name]: value }));
   };
 
   const onSubmit = useCallback(
-    (e) => {
+    async (e) => {
       e.preventDefault();
+      setSubmitError("");
 
       // Validación de campos
       const err = validate(form);
@@ -183,31 +153,56 @@ export default function AppointmentForm() {
         return;
       }
 
-      // Cupo diario (UI/UX). El backend debe validar.
+      // Validar que la hora esté disponible
+      if (!availableHours.includes(form.time)) {
+        setErrors((prev) => ({
+          ...prev,
+          time: "Esta hora ya no está disponible. Selecciona otra.",
+        }));
+        document.getElementById("time")?.focus();
+        return;
+      }
+
+      // Cupo diario
       if (quotaFull) {
         setErrors((prev) => ({
           ...prev,
           date: prev.date || "Cupo diario completo (10/10).",
         }));
-        const el = document.getElementById("date");
-        el?.focus();
+        document.getElementById("date")?.focus();
         return;
       }
 
-      // Aquí irá la lógica para enviar el formulario al backend
-      console.log("Formulario enviado:", form);
+      // Preparar datos para enviar
+      const appointmentData = {
+        ...form,
+        patientId: form.patientId.trim(), // Asegurar que el DNI no tenga espacios
+        reason: form.reason.trim(),
+      };
 
-      setIsSuccess(true);
-      setOpenSuccess(true);
+      // Enviar al backend
+      setIsSubmitting(true);
+      try {
+        console.log("Enviando cita con datos:", appointmentData);
+        await createAppointment(appointmentData);
+        setIsSuccess(true);
+        setOpenSuccess(true);
+      } catch (error) {
+        console.error("Error al crear cita:", error);
+        setSubmitError(
+          error.message || "No se pudo crear la cita. Inténtalo de nuevo."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [form, validate, quotaFull]
+    [form, validate, quotaFull, availableHours]
   );
 
   useEffect(() => {
     if (!isSuccess) return;
     setForm(InitialForm);
     setResetKey((k) => k + 1);
-    // Enfocar el primer input (ID de paciente)
     setTimeout(() => firstInputRef.current?.focus(), 0);
     setIsSuccess(false);
   }, [isSuccess]);
@@ -230,23 +225,27 @@ export default function AppointmentForm() {
         autoComplete="off"
         noValidate
       >
-        {/* Paciente (placeholder; luego se reemplaza por <PatientSelect />) */}
-        {/* EDIT: Reemplazado input por PatientSelect (autocomplete local) */}
+        {/* Error general de envío */}
+        {submitError && (
+          <div className="rounded-lg border border-orange bg-orange/10 p-3 text-sm text-orange">
+            {submitError}
+          </div>
+        )}
+
+        {/* Paciente */}
         <div className="grid gap-1">
           <label htmlFor="patientId" className="text-sm font-medium">
             Paciente
           </label>
           <PatientSelect
             value={form.patientId}
-            onSelect={(id) => {
-              setForm((f) => ({ ...f, patientId: id }));
+            onSelect={(dni) => {
+              setForm((f) => ({ ...f, patientId: dni }));
               setErrors((prev) => ({ ...prev, patientId: "" }));
+              setSubmitError("");
             }}
             error={errors.patientId}
           />
-          <p className="text-xs text-gray-dark">
-            {/* * En el siguiente paso esto será un buscador (nombre/DNI). */}
-          </p>
         </div>
 
         {/* Fecha y hora */}
@@ -261,12 +260,12 @@ export default function AppointmentForm() {
               type="date"
               value={form.date}
               onChange={onChange}
+              min={new Date().toISOString().split("T")[0]}
               className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
                 errors.date || quotaFull ? "border-orange" : "border-gray"
               }`}
               required
             />
-            {/* Info de cupo diario */}
             {errors.date && (
               <p id="date-error" className="text-xs text-orange">
                 {errors.date}
@@ -298,30 +297,43 @@ export default function AppointmentForm() {
             <label htmlFor="time" className="text-sm font-medium">
               Hora
             </label>
-            <input
+            <select
               id="time"
               name="time"
-              type="time"
               value={form.time}
               onChange={onChange}
-              /* EDIT: intervalos de 30 min y último inicio 13:30 */
-              step="1800"
-              min="09:00"
-              max="13:30"
-              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
+              disabled={!form.date || hoursLoading || availableHours.length === 0}
+              className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed ${
                 errors.time ? "border-orange" : "border-gray"
               }`}
               required
-            />
+            >
+              <option value="">
+                {!form.date
+                  ? "Selecciona primero una fecha"
+                  : hoursLoading
+                  ? "Cargando horas..."
+                  : availableHours.length === 0
+                  ? "No hay horas disponibles"
+                  : "Selecciona una hora"}
+              </option>
+              {availableHours.map((hour) => (
+                <option key={hour} value={hour}>
+                  {hour}
+                </option>
+              ))}
+            </select>
             {errors.time && (
               <p id="time-error" className="text-xs text-orange">
                 {errors.time}
               </p>
             )}
-            {/* EDIT: mensaje de horario permitido */}
-            {!errors.time && (
+            {hoursError && !errors.time && (
+              <p className="text-xs text-orange">{hoursError}</p>
+            )}
+            {!errors.time && !hoursError && form.date && !hoursLoading && (
               <p className="text-xs text-gray-500">
-                Horario permitido: 09:00–14:00 (último inicio 13:30).
+                Horario: 09:00–14:00 (lunes a viernes, intervalos de 30 min)
               </p>
             )}
             {form.time && !errors.time && (
@@ -349,6 +361,9 @@ export default function AppointmentForm() {
             <option value="vaccine">Vacunación</option>
             <option value="urgent">Urgencia</option>
           </select>
+          <p className="text-xs text-gray-500">
+            Las vacunaciones se tratan como consultas estándar.
+          </p>
         </div>
 
         {/* Motivo */}
@@ -361,7 +376,7 @@ export default function AppointmentForm() {
             name="reason"
             value={form.reason}
             onChange={onChange}
-            placeholder="Describe brevemente el motivo"
+            placeholder="Describe brevemente el motivo (5-160 caracteres)"
             className={`rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
               errors.reason ? "border-orange" : "border-gray"
             }`}
@@ -372,9 +387,14 @@ export default function AppointmentForm() {
               {errors.reason}
             </p>
           )}
+          {!errors.reason && form.reason.length > 0 && (
+            <p className="text-xs text-gray-500">
+              {form.reason.length} / 160 caracteres
+            </p>
+          )}
         </div>
 
-        {/* Estado (por defecto pendiente; admin puede cambiarlo si procede) */}
+        {/* Estado (opcional, solo para admin) */}
         <div className="grid gap-1">
           <label htmlFor="status" className="text-sm font-medium">
             Estado
@@ -388,8 +408,11 @@ export default function AppointmentForm() {
           >
             <option value="pending">Pendiente</option>
             <option value="attended">Atendida</option>
-            <option value="past">Pasada</option>
+            <option value="past">No asistida</option>
           </select>
+          <p className="text-xs text-gray-500">
+            Por defecto las nuevas citas se crean como "Pendiente".
+          </p>
         </div>
 
         {/* Acciones */}
@@ -397,15 +420,17 @@ export default function AppointmentForm() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="rounded-lg bg-gray px-4 py-2 text-sm font-medium text-gray-dark hover:opacity-90"
+            disabled={isSubmitting}
+            className="rounded-lg bg-gray px-4 py-2 text-sm font-medium text-gray-dark hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-orange px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            disabled={isSubmitting || hoursLoading || quotaLoading}
+            className="rounded-lg bg-orange px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Crear cita
+            {isSubmitting ? "Creando..." : "Crear cita"}
           </button>
         </div>
       </form>

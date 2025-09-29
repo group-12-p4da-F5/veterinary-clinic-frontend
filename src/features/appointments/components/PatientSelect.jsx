@@ -1,42 +1,63 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-
-// Mock local de pacientes (id que guardaremos en el form + etiqueta visible)
-const OPTIONS = [
-    { id: "p-001", label: "Cookie · Dolores Delano (DNI 12345678A)" },
-    { id: "p-002", label: "Mila · Aitor Menta (DNI 22334455B)" },
-    { id: "p-003", label: "Rocky · Esteban Dido (DNI 99887766C)" },
-    { id: "p-004", label: "Toby · Benito Camelas (DNI 44556677D)" },
-    { id: "p-005", label: "Luna · Luz Cuesta Mogollón (DNI 11223344E)" },
-];
+import { getAllUsers } from "../services/userService";
 
 /**
  * Props:
- *  - value: string (patientId seleccionado en el form)
- *  - onSelect: (id: string) => void  // setea patientId en el form
- *  - error?: string                  // mensaje de error del form (si lo hay)
+ *  - value: string (DNI del paciente seleccionado en el form)
+ *  - onSelect: (dni: string) => void  // setea patientId en el form
+ *  - error?: string                    // mensaje de error del form (si lo hay)
  */
 export default function PatientSelect({ value, onSelect, error }) {
   const rootRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  // Cargar usuarios desde el backend al montar el componente
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setLoadError("");
+        const data = await getAllUsers();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error al cargar usuarios:", err);
+        setLoadError("No se pudieron cargar los pacientes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Sincroniza texto visible al cambiar value
   useEffect(() => {
-    const sel = OPTIONS.find((o) => o.id === value);
-    setQuery(sel ? sel.label : "");
-  }, [value]);
+    const selected = users.find((u) => u.dni === value);
+    if (selected) {
+      setQuery(`${selected.fullName} (${selected.dni})`);
+    } else if (!value) {
+      setQuery("");
+    }
+  }, [value, users]);
 
   // Filtro por texto
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return OPTIONS;
-    return OPTIONS.filter((o) => o.label.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return users;
+    return users.filter((u) => {
+      const fullText = `${u.fullName} ${u.dni} ${u.email || ""}`.toLowerCase();
+      return fullText.includes(q);
+    });
+  }, [query, users]);
 
-  const handleSelect = (opt) => {
-    onSelect?.(opt.id);
-    setQuery(opt.label);
+  const handleSelect = (user) => {
+    onSelect?.(user.dni);
+    setQuery(`${user.fullName} (${user.dni})`);
     setOpen(false);
   };
 
@@ -74,8 +95,13 @@ export default function PatientSelect({ value, onSelect, error }) {
         onFocus={() => setOpen(true)}
         onBlur={onInputBlur}
         onKeyDown={onInputKeyDown}
-        placeholder="Busca por nombre/DNI del responsable…"
-        className={`w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring ${
+        placeholder={
+          loading 
+            ? "Cargando pacientes..." 
+            : "Busca por nombre o DNI del paciente…"
+        }
+        disabled={loading}
+        className={`w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed ${
           error ? "border-orange" : "border-gray"
         }`}
         aria-invalid={!!error}
@@ -88,30 +114,43 @@ export default function PatientSelect({ value, onSelect, error }) {
         </p>
       )}
 
-      {open && (
+      {loadError && (
+        <p className="mt-1 text-xs text-orange">
+          {loadError}
+        </p>
+      )}
+
+      {open && !loading && (
         <div
           role="listbox"
           className="
             absolute z-50 mt-1 w-full rounded-lg border border-gray bg-white shadow-lg
-            overflow-y-auto max-h-36
+            overflow-y-auto max-h-48
           "
-          style={{ maxHeight: "144px" }} // fallback por si Tailwind no aplica max-h
         >
           {filtered.length === 0 ? (
-            <div className="p-2 text-sm text-gray-500">Sin resultados</div>
+            <div className="p-3 text-sm text-gray-500">
+              {users.length === 0 
+                ? "No hay pacientes registrados" 
+                : "Sin resultados"}
+            </div>
           ) : (
-            filtered.map((opt) => (
+            filtered.map((user) => (
               <button
-                key={opt.id}
+                key={user.dni}
                 type="button"
                 // preventDefault en mousedown evita perder foco antes del click
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleSelect(opt)}
+                onClick={() => handleSelect(user)}
                 role="option"
-                aria-selected={opt.id === value}
-                className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-green-light/40"
+                aria-selected={user.dni === value}
+                className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-green-light/40 border-b border-gray-100 last:border-b-0"
               >
-                {opt.label}
+                <div className="font-medium">{user.fullName}</div>
+                <div className="text-xs text-gray-500">
+                  DNI: {user.dni}
+                  {user.email && ` · ${user.email}`}
+                </div>
               </button>
             ))
           )}
