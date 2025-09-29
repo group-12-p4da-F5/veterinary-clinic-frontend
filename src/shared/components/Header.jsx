@@ -4,6 +4,7 @@ import { useState } from "react";
 import imgHeader from "../assets/imgHeader.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../features/auth/slices/userSlice";
+import { logoutService } from "../../features/auth/services/authService";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,9 +12,14 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logoutService();
+      dispatch(logout());
+      navigate("/");
+    } catch (err) {
+      console.error(err.message);
+    }
   }
 
   return (
