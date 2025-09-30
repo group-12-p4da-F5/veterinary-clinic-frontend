@@ -31,7 +31,8 @@ const Login = () => {
     if (!validate()) return;
 
     try {
-      await dispatch(loginUser(formData)).unwrap();
+      const resultAction = await dispatch(loginUser(formData)).unwrap();
+      console.log("Dispatch login result:", resultAction);
     } catch (err) {
       console.log("Error: ", err);
     }

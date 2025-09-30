@@ -1,5 +1,5 @@
 export const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-export const isValidDni = (dni) => /^\d{8}[A-Za-z]$/.test(dni);
+export const isValidDni = (dni) => /^\d{8}[a-zA-Z]$/.test(dni);
 
 export const validateRegisterForm = (data, captchaToken) => {
   const { dni, name, password, verify_password, email, phone } = data;
