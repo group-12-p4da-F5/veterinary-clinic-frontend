@@ -11,9 +11,9 @@ export default function AdminCreateAppointmentPage() {
       </header>
 
       <section className="rounded-xl border border-gray bg-white p-4 shadow-sm">
-        <p className="text-sm text-gray-dark">
+        <div className="text-sm text-gray-dark">
          <AppointmentForm />
-        </p>
+        </div>
       </section>
     </main>
   );
