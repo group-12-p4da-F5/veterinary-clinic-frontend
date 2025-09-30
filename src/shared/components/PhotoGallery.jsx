@@ -51,7 +51,7 @@ function PhotoGallery() {
             <img
               src={image.src}
               alt={image.alt}
-              className="w-full h-72 object-cover rounded-lg shadow-lg"
+              className="w-full h-120 object-cover rounded-lg shadow-lg"
             />
           </SwiperSlide>
         ))}
