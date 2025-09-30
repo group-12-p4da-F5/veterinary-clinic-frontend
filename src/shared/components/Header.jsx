@@ -8,7 +8,7 @@ const Header = () => {
 
   return (
     <header 
-      className="relative font-cardo bg-cover bg-center h-56 md:h-80" 
+      className="relative font-bold bg-cover bg-center h-56 md:h-80" 
       style={{ backgroundImage: `url(${imgHeader})` }}
     >
       <div className=" bg-opacity-40 absolute inset-0 z-10"></div>
@@ -46,7 +46,7 @@ const Header = () => {
                 to="/"
                 className="transition-all duration-150 ease-in-out hover:text-gray-dark hover:text-lg"
               >
-                Servicio
+                Citas
               </Link>
               <Link
                 to="/login"
