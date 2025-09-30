@@ -1,67 +1,107 @@
 import { useEffect, useRef, useState } from "react";
-import { getPatients } from "../services/patientsServices";
+import { getPatientsByOwner } from "../services/patientsServices";
+import { getAllUsers } from "../services/userService";
 
 /**
- * Hook de datos con debounce + cancelación:
- * - Debounce ~300ms para no spamear la API mientras el usuario escribe.
- * - AbortController para cancelar la petición anterior si cambia 'q'.
- * - Devuelve { data, loading, error }.
+ * Hook para cargar todos los pacientes con búsqueda local
  */
 export default function usePatients(q) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const abortRef = useRef(null);
-  const debounceRef = useRef(null);
+  const [allPatients, setAllPatients] = useState([]);
+  const loadedRef = useRef(false);
 
-  // Reintenta inmediatamente (sin esperar el debounce)
+  // Cargar todos los pacientes una sola vez
+  useEffect(() => {
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
+    const fetchAllPatients = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const users = await getAllUsers();
+        
+        const patientsPromises = users.map((user) =>
+          getPatientsByOwner({ dni: user.dni }).catch(() => [])
+        );
+        
+        const patientsArrays = await Promise.all(patientsPromises);
+        
+        const patients = patientsArrays
+          .flat()
+          .map((patient) => ({
+            ...patient,
+            ownerName: users.find((u) => u.dni === patient.ownerDni)?.fullName || "Desconocido",
+            species: "Perro/Gato" // Ajusta según tu modelo
+          }));
+        
+        setAllPatients(patients);
+        setData(patients);
+      } catch (err) {
+        console.error("Error al cargar pacientes:", err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllPatients();
+  }, []);
+
+  // Filtrar localmente según la query
+  useEffect(() => {
+    if (!q || q.trim() === "") {
+      setData(allPatients);
+      return;
+    }
+
+    const query = q.trim().toLowerCase();
+    const filtered = allPatients.filter((patient) => {
+      const searchText = `${patient.name} ${patient.breed} ${patient.species || ""} ${patient.ownerName}`.toLowerCase();
+      return searchText.includes(query);
+    });
+    
+    setData(filtered);
+  }, [q, allPatients]);
+
   const reload = async () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (abortRef.current) abortRef.current.abort();
-
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
+    loadedRef.current = false;
+    setAllPatients([]);
+    setData([]);
+    
     try {
-      setError(null);
       setLoading(true);
-      const rows = await getPatients({ q, signal: ctrl.signal });
-      if (!ctrl.signal.aborted) setData(rows);
+      setError(null);
+      
+      const users = await getAllUsers();
+      
+      const patientsPromises = users.map((user) =>
+        getPatientsByOwner({ dni: user.dni }).catch(() => [])
+      );
+      
+      const patientsArrays = await Promise.all(patientsPromises);
+      
+      const patients = patientsArrays
+        .flat()
+        .map((patient) => ({
+          ...patient,
+          ownerName: users.find((u) => u.dni === patient.ownerDni)?.fullName || "Desconocido",
+          species: "Perro/Gato"
+        }));
+      
+      setAllPatients(patients);
+      setData(patients);
+      loadedRef.current = true;
     } catch (err) {
-      if (err.name !== "AbortError") setError(err);
+      console.error("Error al recargar pacientes:", err);
+      setError(err);
     } finally {
-      if (!ctrl.signal.aborted) setLoading(false);
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    setError(null);
-    setLoading(true);
-
-    // Debounce: espera 300ms desde la última tecla
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      // Cancela petición previa (si la había)
-      if (abortRef.current) abortRef.current.abort();
-      const ctrl = new AbortController();
-      abortRef.current = ctrl;
-
-      try {
-        const rows = await getPatients({ q, signal: ctrl.signal });
-        if (!ctrl.signal.aborted) setData(rows);
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err);
-      } finally {
-        if (!ctrl.signal.aborted) setLoading(false);
-      }
-    }, 300);
-
-    // Cleanup: limpia el timeout y aborta la última petición
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortRef.current) abortRef.current.abort();
-    };
-  }, [q]);
 
   return { data, loading, error, reload };
 }

@@ -63,9 +63,9 @@ export default function AppointmentForm() {
   const validate = useCallback((data) => {
     const err = { patientId: "", date: "", time: "", reason: "" };
 
-    // patientId (DNI)
-    if (!data.patientId || !data.patientId.trim()) {
-      err.patientId = "Selecciona un paciente válido.";
+    // patientId (Integer)
+    if (!data.patientId) {
+      err.patientId = "Selecciona una mascota.";
     }
 
     // date
@@ -149,7 +149,11 @@ export default function AppointmentForm() {
       if (hasErrors(err)) {
         const order = ["patientId", "date", "time", "reason"];
         const firstError = order.find((k) => err[k]);
-        document.getElementById(firstError)?.focus();
+        if (firstError === "patientId") {
+          firstInputRef.current?.focus();
+        } else {
+          document.getElementById(firstError)?.focus();
+        }
         return;
       }
 
@@ -176,7 +180,7 @@ export default function AppointmentForm() {
       // Preparar datos para enviar
       const appointmentData = {
         ...form,
-        patientId: form.patientId.trim(), // Asegurar que el DNI no tenga espacios
+        patientId: parseInt(form.patientId, 10),
         reason: form.reason.trim(),
       };
 
@@ -232,15 +236,16 @@ export default function AppointmentForm() {
           </div>
         )}
 
-        {/* Paciente */}
+        {/* Mascota */}
         <div className="grid gap-1">
           <label htmlFor="patientId" className="text-sm font-medium">
-            Paciente
+            Mascota
           </label>
           <PatientSelect
+            ref={firstInputRef}
             value={form.patientId}
-            onSelect={(dni) => {
-              setForm((f) => ({ ...f, patientId: dni }));
+            onSelect={(patientId) => {
+              setForm((f) => ({ ...f, patientId }));
               setErrors((prev) => ({ ...prev, patientId: "" }));
               setSubmitError("");
             }}

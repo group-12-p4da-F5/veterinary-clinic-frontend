@@ -1,86 +1,83 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getAllUsers } from "../services/userService";
+import { getAllPatients } from "../services/patientsServices";
 
 /**
- * Props:
- *  - value: string (DNI del paciente seleccionado en el form)
- *  - onSelect: (dni: string) => void  // setea patientId en el form
- *  - error?: string                    // mensaje de error del form (si lo hay)
+ * PatientSelect - Desplegable con TODAS las mascotas
  */
 export default function PatientSelect({ value, onSelect, error }) {
   const rootRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [users, setUsers] = useState([]);
+  const [allPatients, setAllPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  // Cargar usuarios desde el backend al montar el componente
+  // Cargar todas las mascotas al montar
   useEffect(() => {
-    const fetchUsers = async () => {
+    let isMounted = true;
+    
+    const fetchAllPatients = async () => {
       try {
         setLoading(true);
         setLoadError("");
-        const data = await getAllUsers();
-        setUsers(data);
+        
+        const patients = await getAllPatients();
+        
+        if (!isMounted) return;
+        
+        console.log("Mascotas cargadas:", patients.length);
+        setAllPatients(patients);
       } catch (err) {
-        console.error("Error al cargar usuarios:", err);
-        setLoadError("No se pudieron cargar los pacientes");
+        console.error("Error al cargar mascotas:", err);
+        if (isMounted) {
+          setLoadError("No se pudieron cargar las mascotas");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchUsers();
+    fetchAllPatients();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Sincroniza texto visible al cambiar value
   useEffect(() => {
-    const selected = users.find((u) => u.dni === value);
+    const selected = allPatients.find((p) => String(p.patientId) === String(value));
     if (selected) {
-      setQuery(`${selected.fullName} (${selected.dni})`);
+      setQuery(`${selected.name} (${selected.breed})`);
     } else if (!value) {
       setQuery("");
     }
-  }, [value, users]);
+  }, [value, allPatients]);
 
-  // Filtro por texto
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) => {
-      const fullText = `${u.fullName} ${u.dni} ${u.email || ""}`.toLowerCase();
+    if (!q) return allPatients;
+    return allPatients.filter((p) => {
+      const fullText = `${p.name} ${p.breed} ${p.gender}`.toLowerCase();
       return fullText.includes(q);
     });
-  }, [query, users]);
+  }, [query, allPatients]);
 
-  const handleSelect = (user) => {
-    onSelect?.(user.dni);
-    setQuery(`${user.fullName} (${user.dni})`);
+  const handleSelect = (patient) => {
+    onSelect?.(String(patient.patientId));
+    setQuery(`${patient.name} (${patient.breed})`);
     setOpen(false);
   };
 
-  // Cerrar al hacer click/touch FUERA (pointerdown es más fiable)
   useEffect(() => {
     const closeOnOutside = (e) => {
-      if (!rootRef.current) return;
-      if (!rootRef.current.contains(e.target)) setOpen(false);
+      if (!rootRef.current?.contains(e.target)) setOpen(false);
     };
     document.addEventListener("pointerdown", closeOnOutside);
     return () => document.removeEventListener("pointerdown", closeOnOutside);
   }, []);
-
-  // Cerrar al perder foco del componente completo (por Tab, click fuera, etc.)
-  const onInputBlur = () => {
-    setTimeout(() => {
-      if (!rootRef.current?.contains(document.activeElement)) setOpen(false);
-    }, 0);
-  };
-
-  const onInputKeyDown = (e) => {
-    if (e.key === "Escape" || e.key === "Tab") setOpen(false);
-  };
 
   return (
     <div ref={rootRef} className="relative">
@@ -93,67 +90,54 @@ export default function PatientSelect({ value, onSelect, error }) {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        onBlur={onInputBlur}
-        onKeyDown={onInputKeyDown}
+        onBlur={() => {
+          setTimeout(() => {
+            if (!rootRef.current?.contains(document.activeElement)) {
+              setOpen(false);
+            }
+          }, 200);
+        }}
         placeholder={
-          loading 
-            ? "Cargando pacientes..." 
-            : "Busca por nombre o DNI del paciente…"
+          loading
+            ? "Cargando mascotas..."
+            : allPatients.length === 0
+            ? "No hay mascotas registradas"
+            : "Busca por nombre, raza..."
         }
         disabled={loading}
-        className={`w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed ${
+        className={`w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring disabled:bg-gray-100 ${
           error ? "border-orange" : "border-gray"
         }`}
-        aria-invalid={!!error}
-        aria-describedby={error ? "patientId-error" : undefined}
       />
 
-      {error && (
-        <p id="patientId-error" className="mt-1 text-xs text-orange">
-          {error}
+      {error && <p className="mt-1 text-xs text-orange">{error}</p>}
+      {loadError && <p className="mt-1 text-xs text-orange">{loadError}</p>}
+      {loading && <p className="mt-1 text-xs text-gray-500">Cargando mascotas...</p>}
+      
+      {!loading && !error && allPatients.length > 0 && (
+        <p className="mt-1 text-xs text-gray-500">
+          {allPatients.length} {allPatients.length === 1 ? "mascota" : "mascotas"}
         </p>
       )}
 
-      {loadError && (
-        <p className="mt-1 text-xs text-orange">
-          {loadError}
-        </p>
-      )}
-
-      {open && !loading && (
-        <div
-          role="listbox"
-          className="
-            absolute z-50 mt-1 w-full rounded-lg border border-gray bg-white shadow-lg
-            overflow-y-auto max-h-48
-          "
-        >
-          {filtered.length === 0 ? (
-            <div className="p-3 text-sm text-gray-500">
-              {users.length === 0 
-                ? "No hay pacientes registrados" 
-                : "Sin resultados"}
-            </div>
-          ) : (
-            filtered.map((user) => (
-              <button
-                key={user.dni}
-                type="button"
-                // preventDefault en mousedown evita perder foco antes del click
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleSelect(user)}
-                role="option"
-                aria-selected={user.dni === value}
-                className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-green-light/40 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="font-medium">{user.fullName}</div>
-                <div className="text-xs text-gray-500">
-                  DNI: {user.dni}
-                  {user.email && ` · ${user.email}`}
-                </div>
-              </button>
-            ))
-          )}
+      {open && !loading && filtered.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray bg-white shadow-lg overflow-y-auto max-h-60">
+          {filtered.map((patient) => (
+            <button
+              key={patient.patientId}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleSelect(patient)}
+              className="block w-full px-3 py-2 text-left text-sm hover:bg-green-light/40 border-b border-gray-100 last:border-b-0"
+            >
+              <div className="font-medium">
+                {patient.name} <span className="text-xs text-gray-500">({patient.breed})</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                {patient.gender} · {patient.age} {patient.age === 1 ? "año" : "años"}
+              </div>
+            </button>
+          ))}
         </div>
       )}
     </div>
