@@ -1,32 +1,19 @@
-# React + Vite
+# 🐾 Clínica Veterinaria Margarita - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este es el **panel de administración** de la **Clínica Veterinaria Margarita**, desarrollado con **React + Vite**.  
+Está pensado para que la propia Margarita pueda **gestionar sus pacientes, citas, horarios y el estado de las mismas** de manera sencilla e intuitiva.
 
-Currently, two official plugins are available:
+Este repositorio corresponde al **frontend** del proyecto.  
+👉 El backend se encuentra en este repositorio: [veterinary-clinic-backend](https://github.com/group-12-p4da-F5/veterinary-clinic-backend)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 Funcionalidades principales
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- 📅 Gestión de **citas** (creación, edición, actualización de estado).  
+- 🐶 Gestión de **pacientes** (datos, historial).  
+- ⏰ Control de **horarios y disponibilidad**.  
+- 👩‍⚕️ Interfaz pensada para la veterinaria y su equipo.  
+- ⚡ Aplicación **rápida y ligera** gracias a **Vite**.
 
-## Start project
-
-Clone proyect:
-
-```
-git clone https://github.com/group-12-p4da-F5/veterinary-clinic-frontend/tree/dev
-```
-
-Install dependencies:
-
-```
-npm install
-```
-
-Start proyect:
-
-```
-npm run dev
-```
+---
