@@ -47,3 +47,15 @@ Antes de comenzar asegúrate de tener instalado en tu máquina:
  ```
 El proyecto se abrirá en:
 👉 http://localhost:5173
+
+---
+Este frontend se conecta con la API del backend desarrollada en Spring Boot.
+📌 Repositorio: [veterinary-clinic-backend](https://github.com/group-12-p4da-F5/veterinary-clinic-backend)
+
+El backend se encarga de:
+
+Persistencia de datos (pacientes, citas, usuarios).
+
+Lógica de negocio.
+
+Endpoints REST para el panel de administración.
