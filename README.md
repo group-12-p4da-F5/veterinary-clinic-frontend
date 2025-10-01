@@ -17,3 +17,33 @@ Este repositorio corresponde al **frontend** del proyecto.
 - ⚡ Aplicación **rápida y ligera** gracias a **Vite**.
 
 ---
+
+## ⚙️ Requisitos previos
+
+Antes de comenzar asegúrate de tener instalado en tu máquina:
+
+- [Node.js](https://nodejs.org/) (versión recomendada: 18 o superior)  
+- [npm](https://www.npmjs.com/) o [yarn](https://yarnpkg.com/)  
+
+---
+
+## 📥 Instalación y despliegue local
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/group-12-p4da-F5/veterinary-clinic-frontend.git
+    ```
+ 2. **Ir al directorio**
+ ```bash
+  cd veterinary-clinic-frontend
+ ```
+3. **Instalar dependencias**
+```bash
+  npm install
+ ```
+4. **Ejecutar en modo desarrollo**
+```bash
+  npm run dev
+ ```
+El proyecto se abrirá en:
+👉 http://localhost:5173
