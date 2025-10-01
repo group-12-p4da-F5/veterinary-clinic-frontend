@@ -28,7 +28,7 @@ export default function AdminHomePage() {
       Icon: ListChecks, // Usamos el componente Icono
     },
     {
-      to: "/tratamiento/:treatmentId", // La navegación a tratamientos comienza seleccionando un paciente
+      to: "/admin/tratamientos", // La navegación a tratamientos comienza seleccionando un paciente
       title: "Tratamientos",
       desc: "Acceder a los registros médicos y planes de tratamiento.",
       Icon: Stethoscope, // Usamos el componente Icono
