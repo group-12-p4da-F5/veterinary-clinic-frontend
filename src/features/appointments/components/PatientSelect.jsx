@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getAllPatients } from "../services/patientsServices";
+import { getAllPatients } from "../services/patientsService";
 
 /**
  * PatientSelect - Desplegable con TODAS las mascotas

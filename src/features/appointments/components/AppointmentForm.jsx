@@ -4,9 +4,8 @@ import SuccessDialog from "../../../shared/components/SuccessDialog";
 import useDailyQuota from "../hooks/useDailyQuota";
 import useAvailableHours from "../hooks/useAvailableHours";
 import PatientSelect from "./PatientSelect";
-import { createAppointment } from "../services/appointmentService";
+import { createAppointment, updateAppointment } from "../services/appointmentService";
 
-// --- Business rules (horario y duración) ---
 const SLOT_MINUTES = 30;
 const OPEN_HOUR = 9;
 const CLOSE_HOUR = 14;
@@ -20,10 +19,10 @@ const InitialForm = {
   status: "pending",
 };
 
-export default function AppointmentForm() {
+export default function AppointmentForm({ initialData = null, isEditMode = false }) {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState(InitialForm);
+  const [form, setForm] = useState(initialData || InitialForm);
   const [isSuccess, setIsSuccess] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -32,15 +31,19 @@ export default function AppointmentForm() {
 
   const firstInputRef = useRef(null);
 
-  // Hook para obtener horas disponibles
+  // Actualizar el formulario cuando cambian los datos iniciales (modo edición)
+  useEffect(() => {
+    if (initialData) {
+      setForm(initialData);
+    }
+  }, [initialData]);
+
   const { hours: availableHours, loading: hoursLoading, error: hoursError } = 
     useAvailableHours(form.date || null);
 
-  // Hook para cupo diario
   const { count, limit, loading: quotaLoading, error: quotaError, quotaFull } =
     useDailyQuota(form.date || null);
 
-  // Estado de errores por campo
   const [errors, setErrors] = useState({
     patientId: "",
     date: "",
@@ -48,7 +51,6 @@ export default function AppointmentForm() {
     reason: "",
   });
 
-  // Calcula la hora de fin (30 min después)
   const computedEndTime = useMemo(() => {
     if (!form.time) return "";
     const [hh, mm] = form.time.split(":").map(Number);
@@ -59,27 +61,22 @@ export default function AppointmentForm() {
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }, [form.time]);
 
-  // Validador
   const validate = useCallback((data) => {
     const err = { patientId: "", date: "", time: "", reason: "" };
 
-    // patientId (Integer)
     if (!data.patientId) {
       err.patientId = "Selecciona una mascota.";
     }
 
-    // date
     if (!data.date) {
       err.date = "Selecciona una fecha.";
     } else {
-      // Validar que sea día laborable
       const date = new Date(data.date + "T00:00:00");
       const dayOfWeek = date.getDay();
       if (dayOfWeek === 0 || dayOfWeek === 6) {
         err.date = "Solo se pueden agendar citas de lunes a viernes.";
       }
       
-      // Validar que sea fecha futura
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (date < today) {
@@ -87,12 +84,10 @@ export default function AppointmentForm() {
       }
     }
 
-    // time
     if (!data.time) {
       err.time = "Selecciona una hora.";
     }
 
-    // fecha y hora futura (validación adicional)
     if (data.date && data.time) {
       const startAt = new Date(`${data.date}T${data.time}`);
       const now = new Date();
@@ -104,7 +99,6 @@ export default function AppointmentForm() {
       }
     }
 
-    // reason
     const reasonTrim = data.reason.trim();
     if (!reasonTrim) {
       err.reason = "El motivo es obligatorio.";
@@ -123,17 +117,14 @@ export default function AppointmentForm() {
   const onChange = (e) => {
     const { name, value } = e.target;
     
-    // Limpiar error del submit anterior
     setSubmitError("");
     
-    // Si cambia la fecha, limpiar la hora seleccionada
     if (name === "date") {
       setForm((f) => ({ ...f, date: value, time: "" }));
       setErrors((prev) => ({ ...prev, date: "", time: "" }));
       return;
     }
 
-    // Limpia el error del campo editado y actualiza el estado
     setErrors((prev) => ({ ...prev, [name]: "" }));
     setForm((f) => ({ ...f, [name]: value }));
   };
@@ -143,7 +134,6 @@ export default function AppointmentForm() {
       e.preventDefault();
       setSubmitError("");
 
-      // Validación de campos
       const err = validate(form);
       setErrors(err);
       if (hasErrors(err)) {
@@ -157,18 +147,22 @@ export default function AppointmentForm() {
         return;
       }
 
-      // Validar que la hora esté disponible
-      if (!availableHours.includes(form.time)) {
-        setErrors((prev) => ({
-          ...prev,
-          time: "Esta hora ya no está disponible. Selecciona otra.",
-        }));
-        document.getElementById("time")?.focus();
-        return;
+      // En modo edición, permitir la hora actual si no ha cambiado
+      const hasChangedDateTime = isEditMode && initialData && 
+        (form.date !== initialData.date || form.time !== initialData.time);
+
+      if (hasChangedDateTime || !isEditMode) {
+        if (!availableHours.includes(form.time)) {
+          setErrors((prev) => ({
+            ...prev,
+            time: "Esta hora ya no está disponible. Selecciona otra.",
+          }));
+          document.getElementById("time")?.focus();
+          return;
+        }
       }
 
-      // Cupo diario
-      if (quotaFull) {
+      if (!isEditMode && quotaFull) {
         setErrors((prev) => ({
           ...prev,
           date: prev.date || "Cupo diario completo (10/10).",
@@ -177,49 +171,82 @@ export default function AppointmentForm() {
         return;
       }
 
-      // Preparar datos para enviar
-      const appointmentData = {
-        ...form,
-        patientId: parseInt(form.patientId, 10),
-        reason: form.reason.trim(),
-      };
-
-      // Enviar al backend
       setIsSubmitting(true);
       try {
-        console.log("Enviando cita con datos:", appointmentData);
-        await createAppointment(appointmentData);
-        setIsSuccess(true);
-        setOpenSuccess(true);
+        if (isEditMode && initialData?.appointmentId) {
+          // MODO EDICIÓN
+          const dateTime = `${form.date}T${form.time}:00`;
+          const updateData = {
+            dateTime: dateTime,
+            reason: form.reason.trim()
+          };
+          
+          console.log("Actualizando cita ID:", initialData.appointmentId, "con datos:", updateData);
+          await updateAppointment(initialData.appointmentId, updateData);
+          
+          setIsSuccess(true);
+          setOpenSuccess(true);
+          
+          // Redirigir después de mostrar el diálogo
+          setTimeout(() => {
+            navigate("/admin/citas-agendadas");
+          }, 1500);
+        } else {
+          // MODO CREACIÓN
+          const appointmentData = {
+            ...form,
+            patientId: parseInt(form.patientId, 10),
+            reason: form.reason.trim(),
+          };
+
+          console.log("Creando cita con datos:", appointmentData);
+          await createAppointment(appointmentData);
+          setIsSuccess(true);
+          setOpenSuccess(true);
+        }
       } catch (error) {
-        console.error("Error al crear cita:", error);
+        console.error("Error al guardar cita:", error);
         setSubmitError(
-          error.message || "No se pudo crear la cita. Inténtalo de nuevo."
+          error.message || "No se pudo guardar la cita. Inténtalo de nuevo."
         );
       } finally {
         setIsSubmitting(false);
       }
     },
-    [form, validate, quotaFull, availableHours]
+    [form, validate, quotaFull, availableHours, isEditMode, initialData, navigate]
   );
 
   useEffect(() => {
-    if (!isSuccess) return;
+    if (!isSuccess || isEditMode) return;
     setForm(InitialForm);
     setResetKey((k) => k + 1);
     setTimeout(() => firstInputRef.current?.focus(), 0);
     setIsSuccess(false);
-  }, [isSuccess]);
+  }, [isSuccess, isEditMode]);
 
   return (
     <>
       <SuccessDialog
         open={openSuccess}
-        title="Cita creada"
-        message="Hemos registrado la cita correctamente. El cliente recibirá un correo de confirmación."
+        title={isEditMode ? "Cita actualizada" : "Cita creada"}
+        message={
+          isEditMode
+            ? "La cita se ha actualizado correctamente."
+            : "Hemos registrado la cita correctamente. El cliente recibirá un correo de confirmación."
+        }
         actionLabel="Aceptar"
-        onAction={() => {}}
-        onClose={() => setOpenSuccess(false)}
+        onAction={() => {
+          setOpenSuccess(false);
+          if (isEditMode) {
+            navigate("/admin/citas-agendadas");
+          }
+        }}
+        onClose={() => {
+          setOpenSuccess(false);
+          if (isEditMode) {
+            navigate("/admin/citas-agendadas");
+          }
+        }}
       />
 
       <form
@@ -229,14 +256,12 @@ export default function AppointmentForm() {
         autoComplete="off"
         noValidate
       >
-        {/* Error general de envío */}
         {submitError && (
           <div className="rounded-lg border border-orange bg-orange/10 p-3 text-sm text-orange">
             {submitError}
           </div>
         )}
 
-        {/* Mascota */}
         <div className="grid gap-1">
           <label htmlFor="patientId" className="text-sm font-medium">
             Mascota
@@ -250,10 +275,15 @@ export default function AppointmentForm() {
               setSubmitError("");
             }}
             error={errors.patientId}
+            disabled={isEditMode}
           />
+          {isEditMode && (
+            <p className="text-xs text-gray-500">
+              El paciente no puede modificarse en una cita existente.
+            </p>
+          )}
         </div>
 
-        {/* Fecha y hora */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1">
             <label htmlFor="date" className="text-sm font-medium">
@@ -281,7 +311,7 @@ export default function AppointmentForm() {
                 Comprobando disponibilidad…
               </p>
             )}
-            {!quotaLoading && !quotaError && form.date && !quotaFull && (
+            {!quotaLoading && !quotaError && form.date && !quotaFull && !isEditMode && (
               <p className="text-xs text-gray-500">
                 Disponibles: {limit - count} / {limit}
               </p>
@@ -291,7 +321,7 @@ export default function AppointmentForm() {
                 No se pudo comprobar el cupo.
               </p>
             )}
-            {quotaFull && !errors.date && (
+            {quotaFull && !errors.date && !isEditMode && (
               <p className="text-xs text-orange">
                 Cupo diario completo (10/10). Elige otra fecha.
               </p>
@@ -322,6 +352,10 @@ export default function AppointmentForm() {
                   ? "No hay horas disponibles"
                   : "Selecciona una hora"}
               </option>
+              {/* En modo edición, incluir la hora actual aunque no esté disponible */}
+              {isEditMode && initialData && form.time && !availableHours.includes(form.time) && (
+                <option value={form.time}>{form.time} (hora actual)</option>
+              )}
               {availableHours.map((hour) => (
                 <option key={hour} value={hour}>
                   {hour}
@@ -350,7 +384,6 @@ export default function AppointmentForm() {
           </div>
         </div>
 
-        {/* Tipo */}
         <div className="grid gap-1">
           <label htmlFor="type" className="text-sm font-medium">
             Tipo de consulta
@@ -360,18 +393,20 @@ export default function AppointmentForm() {
             name="type"
             value={form.type}
             onChange={onChange}
-            className="rounded-lg border border-gray p-2 text-sm focus:outline-none focus:ring"
+            disabled={isEditMode}
+            className="rounded-lg border border-gray p-2 text-sm focus:outline-none focus:ring disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="standard">Consulta estándar</option>
             <option value="vaccine">Vacunación</option>
             <option value="urgent">Urgencia</option>
           </select>
           <p className="text-xs text-gray-500">
-            Las vacunaciones se tratan como consultas estándar.
+            {isEditMode 
+              ? "El tipo de cita no puede modificarse."
+              : "Las vacunaciones se tratan como consultas estándar."}
           </p>
         </div>
 
-        {/* Motivo */}
         <div className="grid gap-1">
           <label htmlFor="reason" className="text-sm font-medium">
             Motivo de la cita
@@ -399,32 +434,32 @@ export default function AppointmentForm() {
           )}
         </div>
 
-        {/* Estado (opcional, solo para admin) */}
-        <div className="grid gap-1">
-          <label htmlFor="status" className="text-sm font-medium">
-            Estado
-          </label>
-          <select
-            id="status"
-            name="status"
-            value={form.status}
-            onChange={onChange}
-            className="rounded-lg border border-gray p-2 text-sm focus:outline-none focus:ring"
-          >
-            <option value="pending">Pendiente</option>
-            <option value="attended">Atendida</option>
-            <option value="past">No asistida</option>
-          </select>
-          <p className="text-xs text-gray-500">
-            Por defecto las nuevas citas se crean como "Pendiente".
-          </p>
-        </div>
+        {!isEditMode && (
+          <div className="grid gap-1">
+            <label htmlFor="status" className="text-sm font-medium">
+              Estado
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={form.status}
+              onChange={onChange}
+              className="rounded-lg border border-gray p-2 text-sm focus:outline-none focus:ring"
+            >
+              <option value="pending">Pendiente</option>
+              <option value="attended">Atendida</option>
+              <option value="past">No asistida</option>
+            </select>
+            <p className="text-xs text-gray-500">
+              Por defecto las nuevas citas se crean como "Pendiente".
+            </p>
+          </div>
+        )}
 
-        {/* Acciones */}
         <div className="mt-2 flex gap-2">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(isEditMode ? "/admin/citas-agendadas" : -1)}
             disabled={isSubmitting}
             className="rounded-lg bg-gray px-4 py-2 text-sm font-medium text-gray-dark hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -435,7 +470,9 @@ export default function AppointmentForm() {
             disabled={isSubmitting || hoursLoading || quotaLoading}
             className="rounded-lg bg-orange px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Creando..." : "Crear cita"}
+            {isSubmitting 
+              ? (isEditMode ? "Actualizando..." : "Creando...") 
+              : (isEditMode ? "Actualizar cita" : "Crear cita")}
           </button>
         </div>
       </form>

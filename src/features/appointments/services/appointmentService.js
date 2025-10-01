@@ -4,14 +4,26 @@ const API_BASE_URL = "http://localhost:8080/api/v1/appointments";
 // Mapeo de tipos entre frontend y backend
 const TYPE_MAP = {
   standard: "STANDARD",
-  vaccine: "STANDARD", // En tu backend solo hay STANDARD y EMERGENCY
+  emergency: "EMERGENCY",
   urgent: "EMERGENCY"
 };
 
 const STATUS_MAP = {
   pending: "PENDING",
   attended: "ATTENDED",
-  past: "MISSED"
+  missed: "MISSED"
+};
+
+// Mapeo inverso para mostrar en el frontend
+const TYPE_MAP_REVERSE = {
+  STANDARD: "Estándar",
+  EMERGENCY: "Emergencia"
+};
+
+const STATUS_MAP_REVERSE = {
+  PENDING: "pending",
+  ATTENDED: "attended",
+  MISSED: "missed"
 };
 
 /**
@@ -28,7 +40,7 @@ export async function getAvailableHours(dateISO) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
     const hours = await response.json();
-    return hours; // El backend devuelve ["09:00", "09:30", ...]
+    return hours;
   } catch (error) {
     console.error("Error al obtener horas disponibles:", error);
     throw error;
@@ -43,8 +55,8 @@ export async function getAvailableHours(dateISO) {
 export async function getDailyQuota(dateISO) {
   try {
     const availableHours = await getAvailableHours(dateISO);
-    const limit = 10; // Máximo de citas por día
-    const count = limit - availableHours.length; // Citas ocupadas
+    const limit = 10;
+    const count = limit - availableHours.length;
     return { count, limit };
   } catch (error) {
     console.error("Error al obtener cuota diaria:", error);
@@ -59,7 +71,6 @@ export async function getDailyQuota(dateISO) {
  */
 export async function createAppointment(payload) {
   try {
-    // Combinar fecha y hora en LocalDateTime para el backend
     const dateTime = `${payload.date}T${payload.time}:00`;
     
     const dto = {
@@ -111,6 +122,26 @@ export async function getAllAppointments() {
 }
 
 /**
+ * Obtiene una cita específica por ID
+ * @param {number} appointmentId - ID de la cita
+ * @returns {Promise<Object>}
+ */
+export async function getAppointmentById(appointmentId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${appointmentId}`, {
+      credentials: "include"
+    });
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error al obtener cita:", error);
+    throw error;
+  }
+}
+
+/**
  * Obtiene las citas de un paciente específico
  * @param {number} patientId - ID del paciente
  * @returns {Promise<Array>}
@@ -131,6 +162,73 @@ export async function getAppointmentsByPatient(patientId) {
 }
 
 /**
+ * Actualiza una cita (fecha, hora y motivo)
+ * @param {number} appointmentId - ID de la cita
+ * @param {Object} payload - { dateTime: string (ISO), reason: string }
+ * @returns {Promise<Object>}
+ */
+export async function updateAppointment(appointmentId, payload) {
+  try {
+    const dto = {
+      dateTime: payload.dateTime,
+      reason: payload.reason
+    };
+
+    const response = await fetch(`${API_BASE_URL}/${appointmentId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(dto),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error al actualizar cita:", error);
+    throw error;
+  }
+}
+
+/**
+ * Actualiza el estado de una cita
+ * @param {number} appointmentId - ID de la cita
+ * @param {string} newStatus - Nuevo estado del enum (PENDING, ATTENDED, MISSED)
+ * @returns {Promise<Object>}
+ */
+export async function updateAppointmentStatus(appointmentId, newStatus) {
+  try {
+    const dto = {
+      status: newStatus
+    };
+
+    const response = await fetch(`${API_BASE_URL}/${appointmentId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(dto),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error al actualizar estado de cita:", error);
+    throw error;
+  }
+}
+
+/**
  * Elimina una cita
  * @param {number} appointmentId - ID de la cita
  * @returns {Promise<void>}
@@ -146,38 +244,6 @@ export async function deleteAppointment(appointmentId) {
     }
   } catch (error) {
     console.error("Error al eliminar cita:", error);
-    throw error;
-  }
-}
-
-/**
- * Actualiza el estado de una cita
- * @param {number} appointmentId - ID de la cita
- * @param {string} newStatus - Nuevo estado (pending, attended, past)
- * @returns {Promise<Object>}
- */
-export async function updateAppointmentStatus(appointmentId, newStatus) {
-  try {
-    const dto = {
-      status: STATUS_MAP[newStatus] || "PENDING"
-    };
-
-    const response = await fetch(`${API_BASE_URL}/${appointmentId}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(dto),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error al actualizar estado de cita:", error);
     throw error;
   }
 }
