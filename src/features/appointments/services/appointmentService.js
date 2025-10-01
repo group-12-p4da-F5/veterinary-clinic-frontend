@@ -128,7 +128,7 @@ export async function getAllAppointments() {
  */
 export async function getAppointmentById(appointmentId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/${appointmentId}`, {
+    const response = await fetch(`${API_BASE_URL}/by-id/${appointmentId}`, {
       credentials: "include"
     });
     if (!response.ok) {
